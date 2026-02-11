@@ -17,7 +17,7 @@ export function ExamCompletedScreen({ result }: ExamCompletedScreenProps) {
   const router = useRouter();
 
   return (
-    <div className="bg-gray-50 flex items-center justify-center p-12">
+    <div className="bg-gray-50 flex items-center justify-center p-4 sm:p-8 lg:p-20">
       <div className="w-full max-w-md sm:max-w-xl bg-white rounded-xl sm:rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
         {/* Success Icon */}
         <div className="flex justify-center mb-4 sm:mb-6">
