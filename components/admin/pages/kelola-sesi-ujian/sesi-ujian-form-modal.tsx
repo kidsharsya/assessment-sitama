@@ -79,17 +79,14 @@ export function SesiUjianFormModal({ isOpen, onClose, onSave, session, mode, cat
   const [form, setForm] = useState<FormState>(() => getInitialForm(session, mode));
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Reset form when modal opens or session changes
+  // Reset form and errors when modal opens
   useEffect(() => {
     if (isOpen) {
+      setForm(session && mode === 'edit' ? getInitialForm(session, mode) : { ...initialFormState });
       setErrors({});
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
-
-  // Update form when session or mode changes
-  useEffect(() => {
-    setForm(getInitialForm(session, mode));
-  }, [session, mode]);
 
   // Get available categories (not yet selected)
   const availableCategories = useMemo(() => {
@@ -268,7 +265,7 @@ export function SesiUjianFormModal({ isOpen, onClose, onSave, session, mode, cat
             {/* Add Kategori Dropdown */}
             {availableCategories.length > 0 && (
               <div className="flex items-center gap-2">
-                <Select onValueChange={addCategory}>
+                <Select key={form.categoryIds.length} onValueChange={addCategory}>
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Pilih kategori untuk ditambahkan..." />
                   </SelectTrigger>

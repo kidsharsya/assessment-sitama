@@ -1,30 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { CategoryList, CategoryFormModal, PacketList, PacketFormModal, QuestionList, QuestionFormModal, DeleteConfirmModal } from '@/components/admin/pages/bank-soal';
-import {
-  getCategories,
-  getCategoryById,
-  createCategory as createCategoryMock,
-  updateCategory as updateCategoryMock,
-  deleteCategory as deleteCategoryMock,
-  getPacketsByCategoryId,
-  createPacket as createPacketMock,
-  updatePacket as updatePacketMock,
-  deletePacket as deletePacketMock,
-  getQuestionsByPacketId,
-  createQuestion as createQuestionMock,
-  updateQuestion as updateQuestionMock,
-  deleteQuestion as deleteQuestionMock,
-} from '@/lib/mock-data/bank-soal';
+import { BankSoalService } from '@/services/bank-soal.service';
 import type { CategoryWithPackets, PacketWithQuestions, Question, CategoryFormInput, PacketFormInput, QuestionFormInput, ViewLevel, DeleteModalState, OptionLabel } from '@/types/bank-soal';
 
 // ============================================
 // Bank Soal Page Component
 // ============================================
 export default function BankSoalPage() {
-  // Data State - initialize with data
-  const [categories, setCategories] = useState<CategoryWithPackets[]>(() => getCategories());
+  // Data State
+  const [categories, setCategories] = useState<CategoryWithPackets[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // View State
   const [viewLevel, setViewLevel] = useState<ViewLevel>('category');
@@ -52,29 +39,58 @@ export default function BankSoalPage() {
     message: '',
   });
 
-  const loadCategories = () => {
-    const data = getCategories();
-    setCategories(data);
-  };
+  // ============================================
+  // Data Loading Functions
+  // ============================================
+  const loadCategories = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await BankSoalService.getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-  const refreshSelectedCategory = () => {
+  const refreshSelectedCategory = useCallback(async () => {
     if (selectedCategory) {
-      const updated = getCategoryById(selectedCategory.id);
-      if (updated) {
-        setSelectedCategory(updated);
+      try {
+        const updated = await BankSoalService.getCategoryById(selectedCategory.id);
+        if (updated) {
+          setSelectedCategory(updated);
+        }
+      } catch (error) {
+        console.error('Error refreshing category:', error);
       }
     }
-  };
+  }, [selectedCategory]);
 
-  const refreshSelectedPacket = () => {
-    if (selectedPacket && selectedCategory) {
-      const packets = getPacketsByCategoryId(selectedCategory.id);
-      const updated = packets.find((p) => p.id === selectedPacket.id);
-      if (updated) {
-        setSelectedPacket(updated);
+  const refreshSelectedPacket = useCallback(async () => {
+    if (selectedPacket) {
+      try {
+        const questions = await BankSoalService.getQuestionsByPacketId(selectedPacket.id);
+        setSelectedPacket((prev) =>
+          prev
+            ? {
+                ...prev,
+                questions,
+                totalQuestions: questions.length,
+                totalScore: questions.reduce((sum, q) => sum + q.score, 0),
+              }
+            : null,
+        );
+      } catch (error) {
+        console.error('Error refreshing packet:', error);
       }
     }
-  };
+  }, [selectedPacket]);
+
+  // Load on mount
+  useEffect(() => {
+    loadCategories();
+  }, [loadCategories]);
 
   // ============================================
   // Category Handlers
@@ -100,22 +116,25 @@ export default function BankSoalPage() {
     });
   };
 
-  const handleSaveCategory = (data: CategoryFormInput) => {
+  const handleSaveCategory = async (data: CategoryFormInput) => {
     if (editingCategory) {
-      updateCategoryMock(editingCategory.id, data);
+      await BankSoalService.updateCategory(editingCategory.id, data);
     } else {
-      createCategoryMock(data);
+      await BankSoalService.createCategory(data);
     }
-    loadCategories();
+    await loadCategories();
     setCategoryFormOpen(false);
   };
 
-  const handleSelectCategory = (category: CategoryWithPackets) => {
-    // Refresh category data with packets
-    const updated = getCategoryById(category.id);
-    if (updated) {
-      setSelectedCategory(updated);
-      setViewLevel('packet');
+  const handleSelectCategory = async (category: CategoryWithPackets) => {
+    try {
+      const updated = await BankSoalService.getCategoryById(category.id);
+      if (updated) {
+        setSelectedCategory(updated);
+        setViewLevel('packet');
+      }
+    } catch (error) {
+      console.error('Error selecting category:', error);
     }
   };
 
@@ -143,35 +162,32 @@ export default function BankSoalPage() {
     });
   };
 
-  const handleSavePacket = (data: PacketFormInput) => {
+  const handleSavePacket = async (data: PacketFormInput) => {
     if (!selectedCategory) return;
 
     if (editingPacket) {
-      updatePacketMock(editingPacket.id, {
-        ...data,
-        categoryId: selectedCategory.id,
-      });
+      await BankSoalService.updatePacket(editingPacket.id, data);
     } else {
-      createPacketMock({
-        ...data,
-        categoryId: selectedCategory.id,
-      });
+      await BankSoalService.createPacket(selectedCategory.id, data);
     }
-    refreshSelectedCategory();
-    loadCategories();
+    await refreshSelectedCategory();
+    await loadCategories();
     setPacketFormOpen(false);
   };
 
-  const handleSelectPacket = (packet: PacketWithQuestions) => {
-    // Get fresh questions data
-    const questions = getQuestionsByPacketId(packet.id);
-    setSelectedPacket({
-      ...packet,
-      questions,
-      totalQuestions: questions.length,
-      totalScore: questions.reduce((sum, q) => sum + q.score, 0),
-    });
-    setViewLevel('question');
+  const handleSelectPacket = async (packet: PacketWithQuestions) => {
+    try {
+      const questions = await BankSoalService.getQuestionsByPacketId(packet.id);
+      setSelectedPacket({
+        ...packet,
+        questions,
+        totalQuestions: questions.length,
+        totalScore: questions.reduce((sum, q) => sum + q.score, 0),
+      });
+      setViewLevel('question');
+    } catch (error) {
+      console.error('Error selecting packet:', error);
+    }
   };
 
   // ============================================
@@ -197,62 +213,44 @@ export default function BankSoalPage() {
     });
   };
 
-  const handleSaveQuestion = (data: QuestionFormInput) => {
+  const handleSaveQuestion = async (data: QuestionFormInput) => {
     if (!selectedPacket) return;
 
-    const options = (['A', 'B', 'C', 'D', 'E'] as OptionLabel[]).map((label) => ({
-      id: `opt-new-${label}`,
-      label,
-      text: data.options[label].text,
-    }));
-
     if (editingQuestion) {
-      updateQuestionMock(editingQuestion.id, {
-        questionText: data.questionText,
-        imagePath: typeof data.imagePath === 'string' ? data.imagePath : undefined,
-        options,
-        correctAnswer: data.correctAnswer,
-        score: data.score,
-      });
+      await BankSoalService.updateQuestion(editingQuestion.id, data);
     } else {
-      const questions = getQuestionsByPacketId(selectedPacket.id);
-      createQuestionMock({
-        packetId: selectedPacket.id,
-        questionText: data.questionText,
-        imagePath: typeof data.imagePath === 'string' ? data.imagePath : undefined,
-        options,
-        correctAnswer: data.correctAnswer,
-        score: data.score,
-        order: questions.length + 1,
-      });
+      await BankSoalService.createQuestion(selectedPacket.id, data);
     }
-    refreshSelectedPacket();
-    refreshSelectedCategory();
-    loadCategories();
+    await refreshSelectedPacket();
+    await refreshSelectedCategory();
+    await loadCategories();
     setQuestionFormOpen(false);
   };
 
   // ============================================
   // Delete Confirm Handler
   // ============================================
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     const { type, id } = deleteModal;
-
-    if (type === 'category') {
-      deleteCategoryMock(id);
-      loadCategories();
-    } else if (type === 'packet') {
-      deletePacketMock(id);
-      refreshSelectedCategory();
-      loadCategories();
-    } else if (type === 'question') {
-      deleteQuestionMock(id);
-      refreshSelectedPacket();
-      refreshSelectedCategory();
-      loadCategories();
-    }
-
     setDeleteModal({ ...deleteModal, isOpen: false });
+
+    try {
+      if (type === 'category') {
+        await BankSoalService.deleteCategory(id);
+        await loadCategories();
+      } else if (type === 'packet') {
+        await BankSoalService.deletePacket(id);
+        await refreshSelectedCategory();
+        await loadCategories();
+      } else if (type === 'question') {
+        await BankSoalService.deleteQuestion(id);
+        await refreshSelectedPacket();
+        await refreshSelectedCategory();
+        await loadCategories();
+      }
+    } catch (error) {
+      console.error('Error deleting:', error);
+    }
   };
 
   // ============================================
@@ -283,7 +281,9 @@ export default function BankSoalPage() {
       </div>
 
       {/* Content based on view level */}
-      {viewLevel === 'category' && <CategoryList categories={categories} onCreateCategory={handleCreateCategory} onEditCategory={handleEditCategory} onDeleteCategory={handleDeleteCategory} onSelectCategory={handleSelectCategory} />}
+      {viewLevel === 'category' && (
+        <CategoryList categories={categories} onCreateCategory={handleCreateCategory} onEditCategory={handleEditCategory} onDeleteCategory={handleDeleteCategory} onSelectCategory={handleSelectCategory} isLoading={isLoading} />
+      )}
 
       {viewLevel === 'packet' && selectedCategory && (
         <PacketList category={selectedCategory} onBack={handleBackToCategory} onCreatePacket={handleCreatePacket} onEditPacket={handleEditPacket} onDeletePacket={handleDeletePacket} onSelectPacket={handleSelectPacket} />

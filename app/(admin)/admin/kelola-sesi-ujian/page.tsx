@@ -1,20 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SesiUjianList, SesiUjianFormModal, DeleteConfirmModal } from '@/components/admin/pages/kelola-sesi-ujian';
-import { getSessions, getSessionById, createSession as createSessionMock, updateSession as updateSessionMock, deleteSession as deleteSessionMock, getAvailableCategories } from '@/lib/mock-data/exam-session';
+import { ExamSessionService } from '@/services/exam-session.service';
+import { BankSoalService } from '@/services/bank-soal.service';
 import type { ExamSession, ExamSessionFormInput, SessionDeleteModalState } from '@/types/exam-session';
 import type { CategoryWithPackets } from '@/types/bank-soal';
 
 // ============================================
 // Kelola Sesi Ujian Page
-// Mock Data Version (tidak terikat BatchId)
+// Hasura GraphQL Integration
 // ============================================
 
 export default function KelolaUjianPage() {
-  // Data State - initialize with mock data
-  const [sessions, setSessions] = useState<ExamSession[]>(() => getSessions());
-  const categories: CategoryWithPackets[] = getAvailableCategories();
+  // Data State
+  const [sessions, setSessions] = useState<ExamSession[]>([]);
+  const [categories, setCategories] = useState<CategoryWithPackets[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Modal State
   const [formOpen, setFormOpen] = useState(false);
@@ -24,10 +26,33 @@ export default function KelolaUjianPage() {
     session: null,
   });
 
-  // Refresh sessions
-  const refreshSessions = () => {
-    setSessions(getSessions());
-  };
+  // Load sessions from Hasura
+  const loadSessions = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await ExamSessionService.getSessions();
+      setSessions(data);
+    } catch (error) {
+      console.error('Failed to load sessions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load categories for form dropdown (with packet/question stats)
+  const loadCategories = useCallback(async () => {
+    try {
+      const all = await BankSoalService.getCategories();
+      setCategories(all.filter((c) => c.isActive));
+    } catch (error) {
+      console.error('Failed to load categories:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSessions();
+    loadCategories();
+  }, [loadSessions, loadCategories]);
 
   // ============================================
   // Handlers
@@ -37,11 +62,15 @@ export default function KelolaUjianPage() {
     setFormOpen(true);
   };
 
-  const handleEditSession = (session: ExamSession) => {
-    const freshSession = getSessionById(session.id);
-    if (freshSession) {
-      setEditingSession(freshSession);
-      setFormOpen(true);
+  const handleEditSession = async (session: ExamSession) => {
+    try {
+      const freshSession = await ExamSessionService.getSessionById(session.id);
+      if (freshSession) {
+        setEditingSession(freshSession);
+        setFormOpen(true);
+      }
+    } catch (error) {
+      console.error('Failed to fetch session:', error);
     }
   };
 
@@ -49,21 +78,29 @@ export default function KelolaUjianPage() {
     setDeleteModal({ isOpen: true, session });
   };
 
-  const handleSaveSession = (input: ExamSessionFormInput) => {
-    if (editingSession) {
-      updateSessionMock(editingSession.id, input);
-    } else {
-      createSessionMock(input);
+  const handleSaveSession = async (input: ExamSessionFormInput) => {
+    try {
+      if (editingSession) {
+        await ExamSessionService.updateSession(editingSession.id, input);
+      } else {
+        await ExamSessionService.createSession(input);
+      }
+      await loadSessions();
+    } catch (error) {
+      console.error('Failed to save session:', error);
     }
-    refreshSessions();
     setFormOpen(false);
     setEditingSession(null);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (deleteModal.session) {
-      deleteSessionMock(deleteModal.session.id);
-      refreshSessions();
+      try {
+        await ExamSessionService.deleteSession(deleteModal.session.id);
+        await loadSessions();
+      } catch (error) {
+        console.error('Failed to delete session:', error);
+      }
     }
     setDeleteModal({ isOpen: false, session: null });
   };
@@ -80,7 +117,13 @@ export default function KelolaUjianPage() {
       </div>
 
       {/* Sesi Ujian List */}
-      <SesiUjianList sessions={sessions} onCreateSession={handleCreateSession} onEditSession={handleEditSession} onDeleteSession={handleDeleteSession} />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" />
+        </div>
+      ) : (
+        <SesiUjianList sessions={sessions} onCreateSession={handleCreateSession} onEditSession={handleEditSession} onDeleteSession={handleDeleteSession} />
+      )}
 
       {/* Form Modal */}
       <SesiUjianFormModal

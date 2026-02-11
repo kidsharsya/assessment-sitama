@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getToken } from '@/helpers/cookieHelper';
+import { getToken, getHasuraClaims } from '@/helpers/cookieHelper';
 import { API_ENDPOINTS, AUTH_URLS } from '@/lib/constants';
 import { GraphQLResponse } from '@/types/auth.types';
 
@@ -15,13 +15,28 @@ const apiGraphql: AxiosInstance = axios.create({
   timeout: 30000, // 30 detik
 });
 
-// Request interceptor - tambahkan Authorization header
+// Request interceptor - tambahkan Authorization header atau Admin Secret
 apiGraphql.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = getToken();
 
     if (token) {
+      // Authenticated: kirim Bearer token + role headers (sama seperti web-admin)
       config.headers.Authorization = `Bearer ${token}`;
+      config.headers['x-app'] = 'admin';
+
+      // Decode claims untuk x-hasura-role
+      const claims = getHasuraClaims();
+      const allowedRoles = claims?.['x-hasura-allowed-roles'];
+      if (allowedRoles && allowedRoles.length > 0) {
+        config.headers['x-hasura-role'] = allowedRoles[0];
+      }
+    } else {
+      // Fallback: gunakan admin secret jika JWT tidak tersedia (development / cross-origin)
+      const adminSecret = process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET;
+      if (adminSecret) {
+        config.headers['x-hasura-admin-secret'] = adminSecret;
+      }
     }
 
     return config;
@@ -100,6 +115,18 @@ apiRest.interceptors.request.use(
     const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      config.headers['x-app'] = 'admin';
+
+      const claims = getHasuraClaims();
+      const allowedRoles = claims?.['x-hasura-allowed-roles'];
+      if (allowedRoles && allowedRoles.length > 0) {
+        config.headers['x-hasura-role'] = allowedRoles[0];
+      }
+    } else {
+      const adminSecret = process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET;
+      if (adminSecret) {
+        config.headers['x-hasura-admin-secret'] = adminSecret;
+      }
     }
     return config;
   },
