@@ -19,46 +19,33 @@ interface SessionConfig {
   duration: number; // minutes
 }
 
-// Pre-configured sessions (matching exam-session.ts)
+// Pre-configured sessions - Demo Majelis Tabligh Muhammadiyah
 const sessionConfigs: Record<string, SessionConfig> = {
-  SKD001: {
+  CERT01: {
     id: 'session-1',
-    name: 'Sesi Ujian SKD Pagi',
-    categoryIds: ['cat-twk', 'cat-tiu', 'cat-tkp'],
-    duration: 150,
+    name: 'Sesi Sertifikasi Mubaligh 1',
+    categoryIds: ['cat-aik', 'cat-tbq'],
+    duration: 120,
   },
-  SKD002: {
+  CERT02: {
     id: 'session-2',
-    name: 'Sesi Ujian SKD Siang',
-    categoryIds: ['cat-twk', 'cat-tiu', 'cat-tkp'],
-    duration: 150,
-  },
-  TWK001: {
-    id: 'session-3',
-    name: 'Sesi Ujian TWK Khusus',
-    categoryIds: ['cat-twk'],
-    duration: 60,
-  },
-  TITKP1: {
-    id: 'session-4',
-    name: 'Sesi Ujian TIU & TKP',
-    categoryIds: ['cat-tiu', 'cat-tkp'],
+    name: 'Sesi Sertifikasi Mubaligh 2',
+    categoryIds: ['cat-aik', 'cat-tbq'],
     duration: 120,
   },
   // Demo token for testing
   DEMO01: {
     id: 'session-demo',
-    name: 'Demo Exam Session',
-    categoryIds: ['cat-twk'],
+    name: 'Demo Sertifikasi Mubaligh',
+    categoryIds: ['cat-aik', 'cat-tbq'],
     duration: 30,
   },
 };
 
 // Category code mapping
 const categoryCodeMap: Record<string, { code: string; name: string }> = {
-  'cat-twk': { code: 'TWK', name: 'Tes Wawasan Kebangsaan' },
-  'cat-tiu': { code: 'TIU', name: 'Tes Intelegensi Umum' },
-  'cat-tkp': { code: 'TKP', name: 'Tes Karakteristik Pribadi' },
+  'cat-aik': { code: 'AIK', name: 'Al Islam Kemuhammadiyahan' },
+  'cat-tbq': { code: 'TBQ', name: 'Baca Tulis Quran' },
 };
 
 // ============================================

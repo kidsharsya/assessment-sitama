@@ -1,4 +1,4 @@
-import type { RubrikWawancaraWithKriteria, RubrikWawancaraFormInput, Kriteria, KriteriaFormInput, RangeNilai } from '@/types/rubrik-wawancara';
+import type { RubrikWawancara, RubrikWawancaraWithKriteria, Kriteria, RangeNilai, RubrikWawancaraFormInput, KriteriaFormInput } from '@/types/rubrik-wawancara';
 
 // ============================================
 // Helper Functions
@@ -9,24 +9,24 @@ function generateId(prefix: string): string {
 }
 
 // ============================================
-// Mock Kriteria Data
+// Mock Kriteria Data - Demo Majelis Tabligh Muhammadiyah
 // ============================================
 
 const createDefaultRanges = (): RangeNilai[] => [
-  { id: 'r1', minNilai: 0, maxNilai: 40, kategori: 'Tidak Memenuhi', deskripsi: 'Kandidat tidak memenuhi kriteria dasar' },
-  { id: 'r2', minNilai: 41, maxNilai: 60, kategori: 'Cukup', deskripsi: 'Kandidat memenuhi sebagian kriteria' },
-  { id: 'r3', minNilai: 61, maxNilai: 80, kategori: 'Baik', deskripsi: 'Kandidat memenuhi sebagian besar kriteria' },
-  { id: 'r4', minNilai: 81, maxNilai: 100, kategori: 'Sangat Baik', deskripsi: 'Kandidat memenuhi semua kriteria dengan baik' },
+  { id: 'r1', minNilai: 0, maxNilai: 40, kategori: 'Tidak Memenuhi', deskripsi: 'Calon mubaligh tidak memenuhi kriteria dasar' },
+  { id: 'r2', minNilai: 41, maxNilai: 60, kategori: 'Cukup', deskripsi: 'Calon mubaligh memenuhi sebagian kriteria' },
+  { id: 'r3', minNilai: 61, maxNilai: 80, kategori: 'Baik', deskripsi: 'Calon mubaligh memenuhi sebagian besar kriteria' },
+  { id: 'r4', minNilai: 81, maxNilai: 100, kategori: 'Sangat Baik', deskripsi: 'Calon mubaligh memenuhi semua kriteria dengan baik' },
 ];
 
-// Kriteria for Rubrik Teknis
-const kriteriaTeknis: Kriteria[] = [
+// Kriteria for Rubrik Aqidah dan Wawasan Kemuhammadiyahan
+const kriteriaAqidah: Kriteria[] = [
   {
-    id: 'krit-tek-1',
+    id: 'krit-aqd-1',
     rubrikId: 'rubrik-1',
-    nama: 'Kemampuan Pemrograman',
-    deskripsi: 'Menilai kemampuan kandidat dalam menulis kode yang bersih, efisien, dan terstruktur',
-    bobot: 30,
+    nama: 'Pemahaman Aqidah Islam',
+    deskripsi: 'Menilai pemahaman calon mubaligh tentang aqidah Islam sesuai Al-Quran dan Sunnah, termasuk rukun iman dan tauhid',
+    bobot: 25,
     urutan: 1,
     metodePenilaian: {
       tipe: 'range',
@@ -37,10 +37,10 @@ const kriteriaTeknis: Kriteria[] = [
     updatedAt: '2026-01-10T08:00:00Z',
   },
   {
-    id: 'krit-tek-2',
+    id: 'krit-aqd-2',
     rubrikId: 'rubrik-1',
-    nama: 'Pemahaman Algoritma',
-    deskripsi: 'Menilai pemahaman kandidat terhadap algoritma dan struktur data',
+    nama: 'Wawasan Kemuhammadiyahan',
+    deskripsi: 'Menilai pengetahuan tentang sejarah, ideologi, dan gerakan Muhammadiyah termasuk MKCH dan kepribadian Muhammadiyah',
     bobot: 25,
     urutan: 2,
     metodePenilaian: {
@@ -52,11 +52,11 @@ const kriteriaTeknis: Kriteria[] = [
     updatedAt: '2026-01-10T09:00:00Z',
   },
   {
-    id: 'krit-tek-3',
+    id: 'krit-aqd-3',
     rubrikId: 'rubrik-1',
-    nama: 'Problem Solving',
-    deskripsi: 'Kemampuan menganalisis masalah dan menemukan solusi yang tepat',
-    bobot: 25,
+    nama: 'Kemampuan Dakwah',
+    deskripsi: 'Kemampuan menyampaikan pesan dakwah dengan jelas, menarik, dan sesuai dengan manhaj Muhammadiyah',
+    bobot: 20,
     urutan: 3,
     metodePenilaian: {
       tipe: 'range',
@@ -67,11 +67,11 @@ const kriteriaTeknis: Kriteria[] = [
     updatedAt: '2026-01-10T10:00:00Z',
   },
   {
-    id: 'krit-tek-4',
+    id: 'krit-aqd-4',
     rubrikId: 'rubrik-1',
-    nama: 'Pengetahuan Tools & Framework',
-    deskripsi: 'Pemahaman terhadap tools, framework, dan best practices dalam development',
-    bobot: 20,
+    nama: 'Pemahaman Fiqih Ibadah',
+    deskripsi: 'Penguasaan fiqih ibadah sesuai keputusan Majelis Tarjih Muhammadiyah',
+    bobot: 15,
     urutan: 4,
     metodePenilaian: {
       tipe: 'range',
@@ -81,16 +81,31 @@ const kriteriaTeknis: Kriteria[] = [
     createdAt: '2026-01-10T11:00:00Z',
     updatedAt: '2026-01-10T11:00:00Z',
   },
+  {
+    id: 'krit-aqd-5',
+    rubrikId: 'rubrik-1',
+    nama: 'Akhlak dan Kepribadian',
+    deskripsi: 'Menilai akhlak, sikap, dan kepribadian calon mubaligh sesuai tuntunan Islam dan nilai-nilai Muhammadiyah',
+    bobot: 15,
+    urutan: 5,
+    metodePenilaian: {
+      tipe: 'range',
+      ranges: createDefaultRanges(),
+      nilaiMaksimum: 100,
+    },
+    createdAt: '2026-01-10T12:00:00Z',
+    updatedAt: '2026-01-10T12:00:00Z',
+  },
 ];
 
-// Kriteria for Rubrik HR
-const kriteriaHR: Kriteria[] = [
+// Kriteria for Rubrik Baca Tulis Quran
+const kriteriaBTQ: Kriteria[] = [
   {
-    id: 'krit-hr-1',
+    id: 'krit-btq-1',
     rubrikId: 'rubrik-2',
-    nama: 'Kemampuan Komunikasi',
-    deskripsi: 'Kemampuan menyampaikan ide dengan jelas dan efektif',
-    bobot: 25,
+    nama: 'Kelancaran Membaca Al-Quran',
+    deskripsi: 'Kemampuan membaca Al-Quran dengan lancar tanpa terbata-bata',
+    bobot: 30,
     urutan: 1,
     metodePenilaian: {
       tipe: 'range',
@@ -101,11 +116,11 @@ const kriteriaHR: Kriteria[] = [
     updatedAt: '2026-01-12T08:00:00Z',
   },
   {
-    id: 'krit-hr-2',
+    id: 'krit-btq-2',
     rubrikId: 'rubrik-2',
-    nama: 'Motivasi & Attitude',
-    deskripsi: 'Menilai motivasi, sikap kerja, dan semangat kandidat',
-    bobot: 25,
+    nama: 'Ketepatan Tajwid',
+    deskripsi: 'Penerapan hukum-hukum tajwid dengan benar saat membaca Al-Quran',
+    bobot: 30,
     urutan: 2,
     metodePenilaian: {
       tipe: 'range',
@@ -116,10 +131,10 @@ const kriteriaHR: Kriteria[] = [
     updatedAt: '2026-01-12T09:00:00Z',
   },
   {
-    id: 'krit-hr-3',
+    id: 'krit-btq-3',
     rubrikId: 'rubrik-2',
-    nama: 'Teamwork',
-    deskripsi: 'Kemampuan bekerja dalam tim dan berkolaborasi',
+    nama: 'Makhorijul Huruf',
+    deskripsi: 'Ketepatan pengucapan huruf-huruf hijaiyah sesuai tempat keluarnya',
     bobot: 25,
     urutan: 3,
     metodePenilaian: {
@@ -131,11 +146,11 @@ const kriteriaHR: Kriteria[] = [
     updatedAt: '2026-01-12T10:00:00Z',
   },
   {
-    id: 'krit-hr-4',
+    id: 'krit-btq-4',
     rubrikId: 'rubrik-2',
-    nama: 'Cultural Fit',
-    deskripsi: 'Kesesuaian dengan budaya dan nilai-nilai perusahaan',
-    bobot: 25,
+    nama: 'Hafalan Surah',
+    deskripsi: 'Kemampuan menghafal surah-surah pilihan dengan baik dan benar',
+    bobot: 15,
     urutan: 4,
     metodePenilaian: {
       tipe: 'range',
@@ -147,13 +162,13 @@ const kriteriaHR: Kriteria[] = [
   },
 ];
 
-// Kriteria for Rubrik Managerial
-const kriteriaManagerial: Kriteria[] = [
+// Kriteria for Rubrik Komitmen Organisasi
+const kriteriaKomitmen: Kriteria[] = [
   {
-    id: 'krit-mgr-1',
+    id: 'krit-kom-1',
     rubrikId: 'rubrik-3',
-    nama: 'Leadership',
-    deskripsi: 'Kemampuan memimpin dan mengarahkan tim',
+    nama: 'Komitmen Berorganisasi',
+    deskripsi: 'Kesediaan dan komitmen untuk aktif dalam kegiatan organisasi Muhammadiyah',
     bobot: 35,
     urutan: 1,
     metodePenilaian: {
@@ -165,10 +180,10 @@ const kriteriaManagerial: Kriteria[] = [
     updatedAt: '2026-01-15T08:00:00Z',
   },
   {
-    id: 'krit-mgr-2',
+    id: 'krit-kom-2',
     rubrikId: 'rubrik-3',
-    nama: 'Strategic Thinking',
-    deskripsi: 'Kemampuan berpikir strategis dan visioner',
+    nama: 'Pengalaman Dakwah',
+    deskripsi: 'Pengalaman dalam kegiatan dakwah dan tabligh sebelumnya',
     bobot: 35,
     urutan: 2,
     metodePenilaian: {
@@ -180,10 +195,10 @@ const kriteriaManagerial: Kriteria[] = [
     updatedAt: '2026-01-15T09:00:00Z',
   },
   {
-    id: 'krit-mgr-3',
+    id: 'krit-kom-3',
     rubrikId: 'rubrik-3',
-    nama: 'Decision Making',
-    deskripsi: 'Kemampuan mengambil keputusan yang tepat dan efektif',
+    nama: 'Motivasi Menjadi Mubaligh',
+    deskripsi: 'Motivasi dan niat yang tulus untuk menjadi mubaligh Muhammadiyah',
     bobot: 30,
     urutan: 3,
     metodePenilaian: {
@@ -203,41 +218,41 @@ const kriteriaManagerial: Kriteria[] = [
 let mockRubriks: RubrikWawancaraWithKriteria[] = [
   {
     id: 'rubrik-1',
-    nama: 'Rubrik Wawancara Teknis',
-    deskripsi: 'Rubrik untuk menilai kemampuan teknis kandidat dalam posisi developer. Mencakup kemampuan coding, pemahaman algoritma, dan problem solving.',
+    nama: 'Rubrik Aqidah dan Wawasan Kemuhammadiyahan',
+    deskripsi: 'Rubrik untuk menilai pemahaman calon mubaligh tentang aqidah Islam dan wawasan Kemuhammadiyahan. Mencakup tauhid, fiqih, dan ideologi Muhammadiyah.',
     isActive: true,
-    kriteriaList: kriteriaTeknis,
-    totalKriteria: kriteriaTeknis.length,
-    totalBobot: kriteriaTeknis.reduce((sum, k) => sum + k.bobot, 0),
+    kriteriaList: kriteriaAqidah,
+    totalKriteria: kriteriaAqidah.length,
+    totalBobot: kriteriaAqidah.reduce((sum, k) => sum + k.bobot, 0),
     createdAt: '2026-01-10T08:00:00Z',
-    updatedAt: '2026-01-10T11:00:00Z',
+    updatedAt: '2026-01-10T12:00:00Z',
   },
   {
     id: 'rubrik-2',
-    nama: 'Rubrik Wawancara HR',
-    deskripsi: 'Rubrik untuk penilaian aspek non-teknis kandidat termasuk soft skills, motivasi, dan kesesuaian budaya perusahaan.',
+    nama: 'Rubrik Baca Tulis Quran',
+    deskripsi: 'Rubrik untuk menilai kemampuan membaca Al-Quran calon mubaligh dengan tajwid yang benar dan makhorijul huruf yang tepat.',
     isActive: true,
-    kriteriaList: kriteriaHR,
-    totalKriteria: kriteriaHR.length,
-    totalBobot: kriteriaHR.reduce((sum, k) => sum + k.bobot, 0),
+    kriteriaList: kriteriaBTQ,
+    totalKriteria: kriteriaBTQ.length,
+    totalBobot: kriteriaBTQ.reduce((sum, k) => sum + k.bobot, 0),
     createdAt: '2026-01-12T08:00:00Z',
     updatedAt: '2026-01-12T11:00:00Z',
   },
   {
     id: 'rubrik-3',
-    nama: 'Rubrik Wawancara Managerial',
-    deskripsi: 'Rubrik untuk menilai kemampuan manajerial kandidat untuk posisi leadership.',
+    nama: 'Rubrik Komitmen dan Motivasi',
+    deskripsi: 'Rubrik untuk menilai komitmen organisasi dan motivasi calon mubaligh dalam berdakwah.',
     isActive: false,
-    kriteriaList: kriteriaManagerial,
-    totalKriteria: kriteriaManagerial.length,
-    totalBobot: kriteriaManagerial.reduce((sum, k) => sum + k.bobot, 0),
+    kriteriaList: kriteriaKomitmen,
+    totalKriteria: kriteriaKomitmen.length,
+    totalBobot: kriteriaKomitmen.reduce((sum, k) => sum + k.bobot, 0),
     createdAt: '2026-01-15T08:00:00Z',
     updatedAt: '2026-01-15T10:00:00Z',
   },
 ];
 
 // Store for all criteria (for independent operations)
-let mockKriteria: Kriteria[] = [...kriteriaTeknis, ...kriteriaHR, ...kriteriaManagerial];
+let mockKriteria: Kriteria[] = [...kriteriaAqidah, ...kriteriaBTQ, ...kriteriaKomitmen];
 
 // ============================================
 // CRUD Functions for Rubrik
@@ -423,12 +438,13 @@ function updateRubrikTotals(rubrikId: string): void {
   const rubrikIndex = mockRubriks.findIndex((r) => r.id === rubrikId);
   if (rubrikIndex === -1) return;
 
-  const kriteriaForRubrik = mockKriteria.filter((k) => k.rubrikId === rubrikId);
+  const kriteriaList = mockKriteria.filter((k) => k.rubrikId === rubrikId);
+
   mockRubriks[rubrikIndex] = {
     ...mockRubriks[rubrikIndex],
-    kriteriaList: kriteriaForRubrik,
-    totalKriteria: kriteriaForRubrik.length,
-    totalBobot: kriteriaForRubrik.reduce((sum, k) => sum + k.bobot, 0),
+    kriteriaList,
+    totalKriteria: kriteriaList.length,
+    totalBobot: kriteriaList.reduce((sum, k) => sum + k.bobot, 0),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -438,42 +454,43 @@ function updateRubrikTotals(rubrikId: string): void {
 // ============================================
 
 export function resetMockRubriks(): void {
-  mockKriteria = [...kriteriaTeknis, ...kriteriaHR, ...kriteriaManagerial];
   mockRubriks = [
     {
       id: 'rubrik-1',
-      nama: 'Rubrik Wawancara Teknis',
-      deskripsi: 'Rubrik untuk menilai kemampuan teknis kandidat dalam posisi developer. Mencakup kemampuan coding, pemahaman algoritma, dan problem solving.',
+      nama: 'Rubrik Aqidah dan Wawasan Kemuhammadiyahan',
+      deskripsi: 'Rubrik untuk menilai pemahaman calon mubaligh tentang aqidah Islam dan wawasan Kemuhammadiyahan.',
       isActive: true,
-      kriteriaList: kriteriaTeknis,
-      totalKriteria: kriteriaTeknis.length,
-      totalBobot: kriteriaTeknis.reduce((sum, k) => sum + k.bobot, 0),
+      kriteriaList: kriteriaAqidah,
+      totalKriteria: kriteriaAqidah.length,
+      totalBobot: kriteriaAqidah.reduce((sum, k) => sum + k.bobot, 0),
       createdAt: '2026-01-10T08:00:00Z',
-      updatedAt: '2026-01-10T11:00:00Z',
+      updatedAt: '2026-01-10T12:00:00Z',
     },
     {
       id: 'rubrik-2',
-      nama: 'Rubrik Wawancara HR',
-      deskripsi: 'Rubrik untuk penilaian aspek non-teknis kandidat termasuk soft skills, motivasi, dan kesesuaian budaya perusahaan.',
+      nama: 'Rubrik Baca Tulis Quran',
+      deskripsi: 'Rubrik untuk menilai kemampuan membaca Al-Quran calon mubaligh.',
       isActive: true,
-      kriteriaList: kriteriaHR,
-      totalKriteria: kriteriaHR.length,
-      totalBobot: kriteriaHR.reduce((sum, k) => sum + k.bobot, 0),
+      kriteriaList: kriteriaBTQ,
+      totalKriteria: kriteriaBTQ.length,
+      totalBobot: kriteriaBTQ.reduce((sum, k) => sum + k.bobot, 0),
       createdAt: '2026-01-12T08:00:00Z',
       updatedAt: '2026-01-12T11:00:00Z',
     },
     {
       id: 'rubrik-3',
-      nama: 'Rubrik Wawancara Managerial',
-      deskripsi: 'Rubrik untuk menilai kemampuan manajerial kandidat untuk posisi leadership.',
+      nama: 'Rubrik Komitmen dan Motivasi',
+      deskripsi: 'Rubrik untuk menilai komitmen organisasi dan motivasi calon mubaligh.',
       isActive: false,
-      kriteriaList: kriteriaManagerial,
-      totalKriteria: kriteriaManagerial.length,
-      totalBobot: kriteriaManagerial.reduce((sum, k) => sum + k.bobot, 0),
+      kriteriaList: kriteriaKomitmen,
+      totalKriteria: kriteriaKomitmen.length,
+      totalBobot: kriteriaKomitmen.reduce((sum, k) => sum + k.bobot, 0),
       createdAt: '2026-01-15T08:00:00Z',
       updatedAt: '2026-01-15T10:00:00Z',
     },
   ];
+
+  mockKriteria = [...kriteriaAqidah, ...kriteriaBTQ, ...kriteriaKomitmen];
 }
 
 // Export mock data for direct access if needed

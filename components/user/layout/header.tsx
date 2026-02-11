@@ -1,6 +1,5 @@
 'use client';
-import { useState } from 'react';
-import { User, Menu, X } from 'lucide-react';
+import { User } from 'lucide-react';
 import Image from 'next/image';
 
 // ============================================
@@ -8,8 +7,6 @@ import Image from 'next/image';
 // ============================================
 
 export function UserHeader() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   // Display name with fallback
   const displayName = 'Muhammad Rizki';
 
@@ -28,37 +25,16 @@ export function UserHeader() {
           </div>
 
           {/* User Info */}
-          <div className="hidden md:flex items-center gap-3 px-3 py-2">
+          <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2">
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-900">{displayName}</p>
-              <p className="text-xs text-gray-500">Mubaligh</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-900">{displayName}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">Mubaligh</p>
             </div>
-            <div className="w-10 h-10 rounded-full border-2 border-teal-500 flex items-center justify-center bg-teal-50">
-              <User className="w-5 h-5 text-teal-600" />
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-teal-500 flex items-center justify-center bg-teal-50">
+              <User className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />
             </div>
           </div>
-
-          {/* Mobile Menu Button */}
-          <button className="md:hidden p-2 rounded-lg hover:bg-gray-100" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
         </div>
-
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-100">
-            {/* Mobile User Info */}
-            <div className="px-4 py-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full border-2 border-teal-500 flex items-center justify-center bg-teal-50">
-                <User className="w-5 h-5 text-teal-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">{displayName}</p>
-                <p className="text-xs text-gray-500">Mubaligh</p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </header>
   );

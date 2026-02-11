@@ -10,7 +10,7 @@ function generateId(prefix: string): string {
 }
 
 function generateRegistrationNumber(index: number): string {
-  return `REG-2026-${String(index + 1).padStart(4, '0')}`;
+  return `MBL-2026-${String(index + 1).padStart(4, '0')}`;
 }
 
 // Generate random score with bias towards passing
@@ -30,38 +30,38 @@ function generateScore(maxScore: number, passingGrade: number): { score: number;
   return { score, isPassed: score >= passingGrade };
 }
 
-// Sample Indonesian names
+// Sample names for Muhammadiyah context
 const sampleNames = [
-  'Ahmad Rizki Pratama',
-  'Siti Nurhaliza',
-  'Budi Santoso',
-  'Dewi Lestari',
-  'Muhammad Fadli',
-  'Rina Wulandari',
-  'Agus Setiawan',
-  'Putri Handayani',
-  'Doni Kusuma',
-  'Lina Marlina',
-  'Eko Prasetyo',
-  'Maya Sari',
-  'Rudi Hermawan',
-  'Ani Suryani',
-  'Joko Widodo',
-  'Wati Kurniasih',
-  'Hendra Gunawan',
-  'Yuni Astuti',
-  'Firman Syah',
-  'Tina Amelia',
-  'Bambang Supriyadi',
-  'Indah Permata',
-  'Wahyu Nugroho',
-  'Ratna Dewi',
-  'Irfan Hakim',
-  'Sari Mulyani',
-  'Dedi Kurniawan',
-  'Nova Tristyana',
-  'Arif Rahman',
-  'Mega Puspita',
+  'Ahmad Fauzi Rahman',
+  'Muhammad Rizki Hidayat',
+  'Abdul Malik Hakim',
+  'Syamsul Arifin',
+  'Muhammad Iqbal',
+  'Ahmad Syauqi',
+  'Fajar Sidiq',
+  'Muhammad Hasan',
+  'Umar Farouq',
+  'Zainuddin Hamid',
+  'Ahmad Dahlan Putra',
+  'Muhammad Yusuf',
+  'Abdurrahman Wahid',
+  'Hasan Basri',
+  'Muhammad Natsir',
+  "Ahmad Rifa'i",
+  'Sulaiman Ahmad',
+  'Ibrahim Musa',
+  'Ismail Hakim',
+  'Muhammad Arsyad',
+  'Ahmad Khatib',
+  'Zainal Abidin',
+  'Muhammad Nur',
+  'Abdullah Sungkar',
+  'Ahmad Sanusi',
+  'Muhammad Amin',
+  'Hamzah Fansuri',
+  'Ahmad Soebardjo',
+  'Muhammad Husni',
+  'Moh. Roem',
 ];
 
 // ============================================
@@ -74,11 +74,10 @@ interface SessionResults {
   results: ParticipantResult[];
 }
 
-// Category configs (matching exam-session mock data)
+// Category configs for AIK and TBQ
 const categoryConfigs: Record<string, { code: string; name: string; maxScore: number; passingGrade: number }> = {
-  'cat-twk': { code: 'TWK', name: 'Tes Wawasan Kebangsaan', maxScore: 150, passingGrade: 65 },
-  'cat-tiu': { code: 'TIU', name: 'Tes Intelegensi Umum', maxScore: 175, passingGrade: 80 },
-  'cat-tkp': { code: 'TKP', name: 'Tes Karakteristik Pribadi', maxScore: 225, passingGrade: 166 },
+  'cat-aik': { code: 'AIK', name: 'Al Islam Kemuhammadiyahan', maxScore: 100, passingGrade: 65 },
+  'cat-tbq': { code: 'TBQ', name: 'Baca Tulis Quran', maxScore: 100, passingGrade: 70 },
 };
 
 // Generate results for a session
@@ -135,28 +134,14 @@ function generateSessionResults(sessionId: string, categoryIds: string[], partic
   return results.sort((a, b) => b.totalScore - a.totalScore);
 }
 
-// Initialize mock results for each session
+// Initialize mock results - Only session-1 has results (sudah selesai)
 let mockSessionResults: SessionResults[] = [
   {
     sessionId: 'session-1',
     isPublished: true,
-    results: generateSessionResults('session-1', ['cat-twk', 'cat-tiu', 'cat-tkp'], 25),
+    results: generateSessionResults('session-1', ['cat-aik', 'cat-tbq'], 25),
   },
-  {
-    sessionId: 'session-2',
-    isPublished: false,
-    results: generateSessionResults('session-2', ['cat-twk', 'cat-tiu', 'cat-tkp'], 20),
-  },
-  {
-    sessionId: 'session-3',
-    isPublished: false,
-    results: generateSessionResults('session-3', ['cat-twk'], 15),
-  },
-  {
-    sessionId: 'session-4',
-    isPublished: true,
-    results: generateSessionResults('session-4', ['cat-tiu', 'cat-tkp'], 18),
-  },
+  // session-2 belum ada hasil (belum dilaksanakan)
 ];
 
 // ============================================
@@ -172,15 +157,17 @@ export function getLeaderboard(sessionId: string, page: number = 0, size: number
 
   const sessionResults = mockSessionResults.find((sr) => sr.sessionId === sessionId);
   if (!sessionResults) {
-    // Generate results if not exists
-    const categoryIds = session.categories.map((c) => c.categoryId);
-    const newResults: SessionResults = {
+    // Return empty leaderboard for sessions without results
+    return {
       sessionId,
-      isPublished: false,
-      results: generateSessionResults(sessionId, categoryIds, 15),
+      sessionName: session.name,
+      dynamicColumns: session.categories.map((c) => c.categoryCode),
+      rows: [],
+      totalElements: 0,
+      totalPages: 0,
+      page,
+      size,
     };
-    mockSessionResults.push(newResults);
-    return getLeaderboard(sessionId, page, size);
   }
 
   const { results } = sessionResults;
@@ -220,7 +207,15 @@ export function getLeaderboard(sessionId: string, page: number = 0, size: number
  */
 export function getExamResultStats(sessionId: string): ExamResultStats | null {
   const sessionResults = mockSessionResults.find((sr) => sr.sessionId === sessionId);
-  if (!sessionResults) return null;
+  if (!sessionResults) {
+    // Return empty stats for sessions without results
+    return {
+      total: 0,
+      lulus: 0,
+      tidakLulus: 0,
+      persentaseKelulusan: 0,
+    };
+  }
 
   const { results } = sessionResults;
   const total = results.length;
@@ -284,22 +279,7 @@ export function resetMockResults(): void {
     {
       sessionId: 'session-1',
       isPublished: true,
-      results: generateSessionResults('session-1', ['cat-twk', 'cat-tiu', 'cat-tkp'], 25),
-    },
-    {
-      sessionId: 'session-2',
-      isPublished: false,
-      results: generateSessionResults('session-2', ['cat-twk', 'cat-tiu', 'cat-tkp'], 20),
-    },
-    {
-      sessionId: 'session-3',
-      isPublished: false,
-      results: generateSessionResults('session-3', ['cat-twk'], 15),
-    },
-    {
-      sessionId: 'session-4',
-      isPublished: true,
-      results: generateSessionResults('session-4', ['cat-tiu', 'cat-tkp'], 18),
+      results: generateSessionResults('session-1', ['cat-aik', 'cat-tbq'], 25),
     },
   ];
 }

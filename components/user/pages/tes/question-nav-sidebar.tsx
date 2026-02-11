@@ -42,7 +42,7 @@ export function QuestionNavSidebar({ totalSoal, currentIndex, jawaban, onGoToSoa
         <h3 className="font-semibold text-gray-900 mb-3 lg:mb-4">Navigasi Soal</h3>
 
         {/* Question Grid */}
-        <div className="grid grid-cols-8 sm:grid-cols-10 lg:grid-cols-5 gap-1.5 lg:gap-2 mb-4 lg:mb-6">
+        <div className="grid grid-cols-6 sm:grid-cols-8 lg:grid-cols-5 gap-2 lg:gap-2 mb-4 lg:mb-6">
           {Array.from({ length: totalSoal }).map((_, index) => (
             <button key={index} onClick={() => onGoToSoal(index)} className={`w-8 h-8 lg:w-10 lg:h-10 rounded-lg border font-medium text-xs lg:text-sm transition-colors ${getStatusColor(index)}`}>
               {index + 1}

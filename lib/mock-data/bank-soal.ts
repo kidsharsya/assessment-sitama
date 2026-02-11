@@ -1,7 +1,7 @@
 import type { Category, CategoryWithPackets, Packet, PacketWithQuestions, Question, QuestionOption, OptionLabel } from '@/types/bank-soal';
 
 // ============================================
-// Mock Questions
+// Mock Questions - Demo Majelis Tabligh Muhammadiyah
 // ============================================
 
 const createMockOption = (questionId: string, label: OptionLabel, text: string): QuestionOption => ({
@@ -19,54 +19,78 @@ const createMockQuestion = (id: string, packetId: string, questionText: string, 
   correctAnswer,
   score,
   order,
-  createdAt: '2025-01-15T10:00:00Z',
-  updatedAt: '2025-01-15T10:00:00Z',
+  createdAt: '2026-01-15T10:00:00Z',
+  updatedAt: '2026-01-15T10:00:00Z',
 });
 
-// TWK Paket A Questions
-const twkPaketAQuestions: Question[] = [
-  createMockQuestion('q-twk-a-1', 'pkt-twk-a', 'Pancasila sebagai dasar negara Indonesia tercantum dalam pembukaan UUD 1945 alinea ke...', ['Pertama', 'Kedua', 'Ketiga', 'Keempat', 'Kelima'], 'D', 5, 1),
-  createMockQuestion('q-twk-a-2', 'pkt-twk-a', 'Hari kemerdekaan Indonesia diperingati setiap tanggal...', ['15 Agustus', '16 Agustus', '17 Agustus', '18 Agustus', '19 Agustus'], 'C', 5, 2),
-  createMockQuestion('q-twk-a-3', 'pkt-twk-a', 'Siapakah proklamator kemerdekaan Indonesia?', ['Soekarno dan Hatta', 'Soekarno dan Sjahrir', 'Hatta dan Tan Malaka', 'Soekarno dan Soepomo', 'Hatta dan Ahmad Subardjo'], 'A', 5, 3),
-  createMockQuestion('q-twk-a-4', 'pkt-twk-a', 'Lembaga negara yang bertugas mengawasi keuangan negara adalah...', ['DPR', 'MPR', 'BPK', 'MA', 'KPK'], 'C', 5, 4),
-  createMockQuestion('q-twk-a-5', 'pkt-twk-a', 'Semboyan Bhinneka Tunggal Ika berasal dari kitab...', ['Negarakertagama', 'Sutasoma', 'Pararaton', 'Arjunawiwaha', 'Bharatayudha'], 'B', 5, 5),
-];
+// ============================================
+// AIK (Al Islam Kemuhammadiyahan) Questions
+// ============================================
 
-// TWK Paket B Questions
-const twkPaketBQuestions: Question[] = [
-  createMockQuestion('q-twk-b-1', 'pkt-twk-b', 'Ideologi Pancasila pertama kali dikemukakan oleh Soekarno pada tanggal...', ['1 Mei 1945', '1 Juni 1945', '17 Agustus 1945', '18 Agustus 1945', '22 Juni 1945'], 'B', 5, 1),
-  createMockQuestion('q-twk-b-2', 'pkt-twk-b', 'UUD 1945 telah mengalami amandemen sebanyak...', ['2 kali', '3 kali', '4 kali', '5 kali', '6 kali'], 'C', 5, 2),
-  createMockQuestion('q-twk-b-3', 'pkt-twk-b', 'Wilayah Indonesia terletak di antara dua benua, yaitu...', ['Asia dan Afrika', 'Asia dan Australia', 'Asia dan Eropa', 'Australia dan Afrika', 'Eropa dan Australia'], 'B', 5, 3),
-];
-
-// TIU Paket A Questions
-const tiuPaketAQuestions: Question[] = [
-  createMockQuestion('q-tiu-a-1', 'pkt-tiu-a', 'Jika x + 5 = 12, maka nilai x adalah...', ['5', '6', '7', '8', '9'], 'C', 5, 1),
-  createMockQuestion('q-tiu-a-2', 'pkt-tiu-a', 'Sinonim dari kata "ELABORASI" adalah...', ['Pengurangan', 'Penguraian', 'Penggabungan', 'Penyederhanaan', 'Pengulangan'], 'B', 5, 2),
-  createMockQuestion('q-tiu-a-3', 'pkt-tiu-a', 'Lawan kata dari "HETEROGEN" adalah...', ['Beragam', 'Homogen', 'Kompleks', 'Abstrak', 'Konkret'], 'B', 5, 3),
-  createMockQuestion('q-tiu-a-4', 'pkt-tiu-a', '25% dari 400 adalah...', ['75', '80', '100', '125', '150'], 'C', 5, 4),
-];
-
-// TKP Paket A Questions
-const tkpPaketAQuestions: Question[] = [
+// AIK Paket A Questions
+const aikPaketAQuestions: Question[] = [
+  createMockQuestion('q-aik-a-1', 'pkt-aik-a', 'Muhammadiyah didirikan oleh KH. Ahmad Dahlan pada tanggal...', ['18 November 1910', '18 November 1912', '18 Desember 1912', '8 Dzulhijjah 1330 H', '18 November 1920'], 'B', 5, 1),
+  createMockQuestion('q-aik-a-2', 'pkt-aik-a', 'Muhammadiyah didirikan di kota...', ['Jakarta', 'Surabaya', 'Yogyakarta', 'Bandung', 'Solo'], 'C', 5, 2),
+  createMockQuestion('q-aik-a-3', 'pkt-aik-a', 'Matan Keyakinan dan Cita-cita Hidup Muhammadiyah (MKCH) ditetapkan pada Muktamar ke...', ['35', '36', '37', '38', '39'], 'C', 5, 3),
+  createMockQuestion('q-aik-a-4', 'pkt-aik-a', 'Gerakan Muhammadiyah berlandaskan pada...', ['Al-Quran dan Hadits', 'Ijtihad Ulama', 'Tradisi Leluhur', 'Fatwa MUI', 'Keputusan Muktamar'], 'A', 5, 4),
   createMockQuestion(
-    'q-tkp-a-1',
-    'pkt-tkp-a',
-    'Ketika Anda mendapat tugas yang sangat banyak dari atasan, sikap Anda adalah...',
-    ['Mengeluh kepada rekan kerja', 'Menolak tugas tersebut', 'Mengerjakan dengan prioritas yang tepat', 'Meminta rekan kerja mengerjakan', 'Menunda-nunda pekerjaan'],
-    'C',
+    'q-aik-a-5',
+    'pkt-aik-a',
+    'Kepanjangan dari HPT dalam Muhammadiyah adalah...',
+    ['Himpunan Putusan Tarjih', 'Hasil Putusan Tarjih', 'Hukum Pengambilan Tarjih', 'Hasanah Putusan Tarjih', 'Himbauan Putusan Tarjih'],
+    'A',
     5,
-    1,
+    5,
   ),
+];
+
+// AIK Paket B Questions
+const aikPaketBQuestions: Question[] = [
+  createMockQuestion('q-aik-b-1', 'pkt-aik-b', 'Majelis yang mengurusi penetapan hukum Islam dalam Muhammadiyah adalah...', ['Majelis Tabligh', 'Majelis Tarjih', 'Majelis Dikdasmen', 'Majelis Wakaf', 'Majelis Pustaka'], 'B', 5, 1),
+  createMockQuestion('q-aik-b-2', 'pkt-aik-b', 'Amal usaha Muhammadiyah di bidang pendidikan meliputi...', ['TK sampai Perguruan Tinggi', 'SD sampai SMA saja', 'Pesantren saja', 'Madrasah saja', 'Perguruan Tinggi saja'], 'A', 5, 2),
+  createMockQuestion('q-aik-b-3', 'pkt-aik-b', 'Organisasi otonom Muhammadiyah untuk pemuda adalah...', ['IMM', 'IPM', 'Pemuda Muhammadiyah', 'Tapak Suci', 'Hizbul Wathan'], 'C', 5, 3),
+];
+
+// AIK Paket C Questions
+const aikPaketCQuestions: Question[] = [
+  createMockQuestion('q-aik-c-1', 'pkt-aik-c', 'Motto gerakan dakwah Muhammadiyah adalah...', ['Fastabiqul Khairat', 'Baldatun Thayyibatun', 'Amar Maruf Nahi Munkar', 'Rahmatan Lil Alamin', 'Khaira Ummah'], 'C', 5, 1),
+  createMockQuestion('q-aik-c-2', 'pkt-aik-c', 'Muktamar tertinggi Muhammadiyah dilaksanakan setiap...', ['3 tahun sekali', '4 tahun sekali', '5 tahun sekali', '6 tahun sekali', '10 tahun sekali'], 'C', 5, 2),
+  createMockQuestion('q-aik-c-3', 'pkt-aik-c', 'Organisasi otonom Muhammadiyah untuk wanita adalah...', ['Nasyiatul Aisyiyah', 'Aisyiyah', 'Fatayat', 'Muslimat', 'Wanita Islam'], 'B', 5, 3),
+];
+
+// ============================================
+// TBQ (Baca Tulis Quran) Questions
+// ============================================
+
+// TBQ Paket A Questions
+const tbqPaketAQuestions: Question[] = [
+  createMockQuestion('q-tbq-a-1', 'pkt-tbq-a', 'Hukum bacaan "Idgham Bighunnah" terjadi apabila nun mati atau tanwin bertemu dengan huruf...', ['ب ج د ق', 'ي ن م و', 'ا ه ع ح', 'خ ص ض ط', 'س ش ز ذ'], 'B', 5, 1),
+  createMockQuestion('q-tbq-a-2', 'pkt-tbq-a', 'Jumlah huruf hijaiyah adalah...', ['26 huruf', '27 huruf', '28 huruf', '29 huruf', '30 huruf'], 'D', 5, 2),
+  createMockQuestion('q-tbq-a-3', 'pkt-tbq-a', 'Tanda baca "Fathah" menghasilkan bunyi...', ['i', 'u', 'a', 'o', 'e'], 'C', 5, 3),
+  createMockQuestion('q-tbq-a-4', 'pkt-tbq-a', 'Hukum bacaan "Ikhfa" berarti...', ['Jelas', 'Samar-samar', 'Memasukkan', 'Memantulkan', 'Menukar'], 'B', 5, 4),
   createMockQuestion(
-    'q-tkp-a-2',
-    'pkt-tkp-a',
-    'Jika Anda melihat rekan kerja melakukan kesalahan, Anda akan...',
-    ['Membiarkan saja', 'Melaporkan ke atasan langsung', 'Menegur dengan baik secara pribadi', 'Menyebarkan ke rekan lain', 'Membahas di grup chat'],
-    'C',
+    'q-tbq-a-5',
+    'pkt-tbq-a',
+    'Mad Wajib Muttashil adalah mad yang terjadi ketika...',
+    ['Huruf mad bertemu hamzah dalam satu kata', 'Huruf mad bertemu hamzah di kata berbeda', 'Huruf mad di akhir ayat', 'Huruf mad bertemu sukun', 'Huruf mad di awal kata'],
+    'A',
     5,
-    2,
+    5,
   ),
+];
+
+// TBQ Paket B Questions
+const tbqPaketBQuestions: Question[] = [
+  createMockQuestion('q-tbq-b-1', 'pkt-tbq-b', 'Huruf Qalqalah ada...', ['3 huruf', '4 huruf', '5 huruf', '6 huruf', '7 huruf'], 'C', 5, 1),
+  createMockQuestion('q-tbq-b-2', 'pkt-tbq-b', 'Tanda waqaf "ج" berarti...', ['Wajib berhenti', 'Dilarang berhenti', 'Boleh berhenti atau terus', 'Lebih baik berhenti', 'Lebih baik terus'], 'C', 5, 2),
+  createMockQuestion('q-tbq-b-3', 'pkt-tbq-b', 'Hukum nun mati bertemu dengan huruf "ب" adalah...', ['Izhar', 'Idgham', 'Iqlab', 'Ikhfa', 'Ghunnah'], 'C', 5, 3),
+];
+
+// TBQ Paket C Questions
+const tbqPaketCQuestions: Question[] = [
+  createMockQuestion('q-tbq-c-1', 'pkt-tbq-c', 'Al-Quran terdiri dari...', ['30 Juz', '114 Surah', '6236 Ayat', 'Semua benar', 'Semua salah'], 'D', 5, 1),
+  createMockQuestion('q-tbq-c-2', 'pkt-tbq-c', 'Surah yang pertama turun adalah...', ['Al-Fatihah', 'Al-Alaq', 'Al-Baqarah', 'Al-Ikhlas', 'An-Nas'], 'B', 5, 2),
+  createMockQuestion('q-tbq-c-3', 'pkt-tbq-c', 'Tajwid berasal dari kata "Jawwada" yang artinya...', ['Membaca', 'Memperbaiki', 'Memahami', 'Menghafal', 'Menyalin'], 'B', 5, 3),
 ];
 
 // ============================================
@@ -74,80 +98,79 @@ const tkpPaketAQuestions: Question[] = [
 // ============================================
 
 const mockPackets: PacketWithQuestions[] = [
-  // TWK Packets
+  // AIK Packets
   {
-    id: 'pkt-twk-a',
-    categoryId: 'cat-twk',
-    name: 'TWK Paket A',
+    id: 'pkt-aik-a',
+    categoryId: 'cat-aik',
+    name: 'AIK Paket A',
     code: 'A',
     isActive: true,
-    questions: twkPaketAQuestions,
-    totalQuestions: twkPaketAQuestions.length,
-    totalScore: twkPaketAQuestions.reduce((sum, q) => sum + q.score, 0),
-    createdAt: '2025-01-10T08:00:00Z',
-    updatedAt: '2025-01-15T10:00:00Z',
+    questions: aikPaketAQuestions,
+    totalQuestions: aikPaketAQuestions.length,
+    totalScore: aikPaketAQuestions.reduce((sum, q) => sum + q.score, 0),
+    createdAt: '2026-01-10T08:00:00Z',
+    updatedAt: '2026-01-15T10:00:00Z',
   },
   {
-    id: 'pkt-twk-b',
-    categoryId: 'cat-twk',
-    name: 'TWK Paket B',
+    id: 'pkt-aik-b',
+    categoryId: 'cat-aik',
+    name: 'AIK Paket B',
     code: 'B',
     isActive: true,
-    questions: twkPaketBQuestions,
-    totalQuestions: twkPaketBQuestions.length,
-    totalScore: twkPaketBQuestions.reduce((sum, q) => sum + q.score, 0),
-    createdAt: '2025-01-10T08:00:00Z',
-    updatedAt: '2025-01-14T09:00:00Z',
+    questions: aikPaketBQuestions,
+    totalQuestions: aikPaketBQuestions.length,
+    totalScore: aikPaketBQuestions.reduce((sum, q) => sum + q.score, 0),
+    createdAt: '2026-01-10T08:00:00Z',
+    updatedAt: '2026-01-14T09:00:00Z',
   },
   {
-    id: 'pkt-twk-c',
-    categoryId: 'cat-twk',
-    name: 'TWK Paket C',
+    id: 'pkt-aik-c',
+    categoryId: 'cat-aik',
+    name: 'AIK Paket C',
     code: 'C',
-    isActive: false,
-    questions: [],
-    totalQuestions: 0,
-    totalScore: 0,
-    createdAt: '2025-01-10T08:00:00Z',
-    updatedAt: '2025-01-10T08:00:00Z',
+    isActive: true,
+    questions: aikPaketCQuestions,
+    totalQuestions: aikPaketCQuestions.length,
+    totalScore: aikPaketCQuestions.reduce((sum, q) => sum + q.score, 0),
+    createdAt: '2026-01-10T08:00:00Z',
+    updatedAt: '2026-01-10T08:00:00Z',
   },
-  // TIU Packets
+  // TBQ Packets
   {
-    id: 'pkt-tiu-a',
-    categoryId: 'cat-tiu',
-    name: 'TIU Paket A',
+    id: 'pkt-tbq-a',
+    categoryId: 'cat-tbq',
+    name: 'TBQ Paket A',
     code: 'A',
     isActive: true,
-    questions: tiuPaketAQuestions,
-    totalQuestions: tiuPaketAQuestions.length,
-    totalScore: tiuPaketAQuestions.reduce((sum, q) => sum + q.score, 0),
-    createdAt: '2025-01-11T08:00:00Z',
-    updatedAt: '2025-01-15T11:00:00Z',
+    questions: tbqPaketAQuestions,
+    totalQuestions: tbqPaketAQuestions.length,
+    totalScore: tbqPaketAQuestions.reduce((sum, q) => sum + q.score, 0),
+    createdAt: '2026-01-11T08:00:00Z',
+    updatedAt: '2026-01-15T11:00:00Z',
   },
   {
-    id: 'pkt-tiu-b',
-    categoryId: 'cat-tiu',
-    name: 'TIU Paket B',
+    id: 'pkt-tbq-b',
+    categoryId: 'cat-tbq',
+    name: 'TBQ Paket B',
     code: 'B',
     isActive: true,
-    questions: [],
-    totalQuestions: 0,
-    totalScore: 0,
-    createdAt: '2025-01-11T08:00:00Z',
-    updatedAt: '2025-01-11T08:00:00Z',
+    questions: tbqPaketBQuestions,
+    totalQuestions: tbqPaketBQuestions.length,
+    totalScore: tbqPaketBQuestions.reduce((sum, q) => sum + q.score, 0),
+    createdAt: '2026-01-11T08:00:00Z',
+    updatedAt: '2026-01-11T08:00:00Z',
   },
-  // TKP Packets
   {
-    id: 'pkt-tkp-a',
-    categoryId: 'cat-tkp',
-    name: 'TKP Paket A',
-    code: 'A',
+    id: 'pkt-tbq-c',
+    categoryId: 'cat-tbq',
+    name: 'TBQ Paket C',
+    code: 'C',
     isActive: true,
-    questions: tkpPaketAQuestions,
-    totalQuestions: tkpPaketAQuestions.length,
-    totalScore: tkpPaketAQuestions.reduce((sum, q) => sum + q.score, 0),
-    createdAt: '2025-01-12T08:00:00Z',
-    updatedAt: '2025-01-15T12:00:00Z',
+    questions: tbqPaketCQuestions,
+    totalQuestions: tbqPaketCQuestions.length,
+    totalScore: tbqPaketCQuestions.reduce((sum, q) => sum + q.score, 0),
+    createdAt: '2026-01-12T08:00:00Z',
+    updatedAt: '2026-01-15T12:00:00Z',
   },
 ];
 
@@ -169,54 +192,28 @@ function calculateCategoryStats(packets: PacketWithQuestions[]) {
 
 export const mockCategories: CategoryWithPackets[] = [
   {
-    id: 'cat-twk',
-    name: 'Tes Wawasan Kebangsaan',
-    code: 'TWK',
-    description: 'Tes untuk mengukur penguasaan pengetahuan dan kemampuan mengimplementasikan nilai-nilai 4 pilar kebangsaan Indonesia.',
+    id: 'cat-aik',
+    name: 'Al Islam Kemuhammadiyahan',
+    code: 'AIK',
+    description: 'Tes untuk mengukur pemahaman tentang ajaran Islam dan nilai-nilai Kemuhammadiyahan, termasuk sejarah, organisasi, dan ideologi Muhammadiyah.',
     passingGrade: 65,
     isActive: true,
-    packets: getCategoryPackets('cat-twk'),
-    ...calculateCategoryStats(getCategoryPackets('cat-twk')),
-    createdAt: '2025-01-01T08:00:00Z',
-    updatedAt: '2025-01-15T10:00:00Z',
+    packets: getCategoryPackets('cat-aik'),
+    ...calculateCategoryStats(getCategoryPackets('cat-aik')),
+    createdAt: '2026-01-01T08:00:00Z',
+    updatedAt: '2026-01-15T10:00:00Z',
   },
   {
-    id: 'cat-tiu',
-    name: 'Tes Intelegensi Umum',
-    code: 'TIU',
-    description: 'Tes untuk mengukur kemampuan verbal, numerik, dan figural dalam menyelesaikan masalah.',
-    passingGrade: 80,
+    id: 'cat-tbq',
+    name: 'Baca Tulis Quran',
+    code: 'TBQ',
+    description: 'Tes untuk mengukur kemampuan membaca Al-Quran dengan tajwid yang benar, pemahaman ilmu tajwid, dan pengetahuan dasar tentang Al-Quran.',
+    passingGrade: 70,
     isActive: true,
-    packets: getCategoryPackets('cat-tiu'),
-    ...calculateCategoryStats(getCategoryPackets('cat-tiu')),
-    createdAt: '2025-01-02T08:00:00Z',
-    updatedAt: '2025-01-15T11:00:00Z',
-  },
-  {
-    id: 'cat-tkp',
-    name: 'Tes Karakteristik Pribadi',
-    code: 'TKP',
-    description: 'Tes untuk mengukur karakteristik pribadi peserta dalam menyikapi berbagai situasi kerja.',
-    passingGrade: 143,
-    isActive: true,
-    packets: getCategoryPackets('cat-tkp'),
-    ...calculateCategoryStats(getCategoryPackets('cat-tkp')),
-    createdAt: '2025-01-03T08:00:00Z',
-    updatedAt: '2025-01-15T12:00:00Z',
-  },
-  {
-    id: 'cat-skd',
-    name: 'Seleksi Kompetensi Dasar',
-    code: 'SKD',
-    description: 'Tes gabungan TWK, TIU, dan TKP untuk seleksi kompetensi dasar.',
-    passingGrade: 301,
-    isActive: false,
-    packets: [],
-    totalPackets: 0,
-    totalQuestions: 0,
-    totalScore: 0,
-    createdAt: '2025-01-04T08:00:00Z',
-    updatedAt: '2025-01-04T08:00:00Z',
+    packets: getCategoryPackets('cat-tbq'),
+    ...calculateCategoryStats(getCategoryPackets('cat-tbq')),
+    createdAt: '2026-01-02T08:00:00Z',
+    updatedAt: '2026-01-15T11:00:00Z',
   },
 ];
 
@@ -226,7 +223,7 @@ export const mockCategories: CategoryWithPackets[] = [
 
 let categoriesData = [...mockCategories];
 let packetsData = [...mockPackets];
-let questionsData = [...twkPaketAQuestions, ...twkPaketBQuestions, ...tiuPaketAQuestions, ...tkpPaketAQuestions];
+let questionsData = [...aikPaketAQuestions, ...aikPaketBQuestions, ...aikPaketCQuestions, ...tbqPaketAQuestions, ...tbqPaketBQuestions, ...tbqPaketCQuestions];
 
 // Generate unique ID
 const generateId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -403,5 +400,5 @@ export const deleteQuestion = (id: string): boolean => {
 export const resetMockData = () => {
   categoriesData = [...mockCategories];
   packetsData = [...mockPackets];
-  questionsData = [...twkPaketAQuestions, ...twkPaketBQuestions, ...tiuPaketAQuestions, ...tkpPaketAQuestions];
+  questionsData = [...aikPaketAQuestions, ...aikPaketBQuestions, ...aikPaketCQuestions, ...tbqPaketAQuestions, ...tbqPaketBQuestions, ...tbqPaketCQuestions];
 };
