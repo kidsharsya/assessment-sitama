@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+import { StorageService } from '@/services/storage.service';
 import type { Question, QuestionFormInput, OptionLabel, QuestionOption } from '@/types/bank-soal';
 
 // ============================================
@@ -69,7 +70,8 @@ export function QuestionFormModal({ isOpen, onClose, onSave, question, mode }: Q
           correctAnswer: question.correctAnswer,
           score: question.score,
         });
-        setImagePreview(question.imagePath || null);
+        // Resolve storage URL untuk preview gambar
+        setImagePreview(StorageService.getPublicUrl(question.imagePath) || null);
       } else {
         setForm(initialFormState);
         setImagePreview(null);

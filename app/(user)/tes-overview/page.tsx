@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { validateTokenAndStartExam } from '@/lib/mock-data/exam-attempt';
+import { AssessmentService } from '@/services/assessment.service';
 
 // ============================================
 // Tes Overview Page
@@ -53,32 +53,54 @@ export default function TesOverview() {
       return;
     }
 
-    if (token.length < 6) {
-      setTokenError('Token ujian minimal 6 karakter');
-      return;
-    }
-
     setIsLoading(true);
     setTokenError('');
 
-    // Simulate loading delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      // Call real API to start exam
+      const result = await AssessmentService.startExam(token.trim());
 
-    // Validate token and start exam
-    const attempt = validateTokenAndStartExam(token);
+      if (!result.success || !result.data?.attemptId) {
+        setTokenError('Token tidak valid atau sesi ujian tidak ditemukan');
+        setIsLoading(false);
+        return;
+      }
 
-    if (!attempt) {
+      // Store attempt data in sessionStorage
+      sessionStorage.setItem('examAttemptId', result.data.attemptId);
+      sessionStorage.setItem(
+        'examStartData',
+        JSON.stringify({
+          attemptId: result.data.attemptId,
+          status: result.data.status,
+          startTime: result.data.startTime,
+          endTime: result.data.endTime,
+          durationMinutes: result.data.durationMinutes,
+        }),
+      );
+
       setIsLoading(false);
-      setTokenError('Token tidak valid atau sesi ujian tidak ditemukan');
-      return;
+      setIsModalOpen(false);
+      router.push('/tes-started');
+    } catch (err: unknown) {
+      setIsLoading(false);
+      const errorMsg = err instanceof Error ? err.message : 'Gagal memulai ujian. Silakan coba lagi.';
+
+      // Check for axios error response
+      interface AxiosLikeError {
+        response?: { data?: { data?: { message?: string } }; status?: number };
+      }
+      const axiosErr = err as AxiosLikeError;
+      if (axiosErr?.response?.data?.data?.message) {
+        setTokenError(axiosErr.response.data.data.message);
+      } else if (axiosErr?.response?.status === 404) {
+        setTokenError('Token tidak valid atau sesi ujian tidak ditemukan');
+      } else if (axiosErr?.response?.status === 409) {
+        setTokenError('Sesi ujian sudah pernah dimulai atau sudah selesai');
+      } else {
+        setTokenError(errorMsg);
+      }
     }
-
-    // Store attempt ID in sessionStorage
-    sessionStorage.setItem('examAttemptId', attempt.attemptId);
-
-    setIsLoading(false);
-    setIsModalOpen(false);
-    router.push('/tes-started');
   };
 
   return (

@@ -5,6 +5,7 @@ import { Plus, Edit, Trash2, FileQuestion, ArrowLeft, MoreVertical, Copy, CheckC
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { StorageService } from '@/services/storage.service';
 import type { CategoryWithPackets, PacketWithQuestions, Question, OptionLabel, QuestionOption } from '@/types/bank-soal';
 
 // ============================================
@@ -149,6 +150,14 @@ export function QuestionList({ category, packet, onBack, onCreateQuestion, onEdi
                         </span>
                       )}
                     </div>
+
+                    {/* Image Preview */}
+                    {question.imagePath && (
+                      <div className="mb-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={StorageService.getPublicUrl(question.imagePath) || question.imagePath} alt="Gambar Soal" className="max-h-32 rounded-lg border border-gray-200 object-contain" />
+                      </div>
+                    )}
 
                     {/* Options Preview */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-3">

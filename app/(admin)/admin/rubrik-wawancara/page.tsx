@@ -1,5 +1,11 @@
-import { RubrikWawancaraContent } from '@/components/admin/pages/rubrik-wawancara';
+'use client';
+import { useEffect } from 'react';
+import { debugAuthCookies } from '@/helpers/cookieHelper';
 
-export default function RubrikWawancaraPage() {
-  return <RubrikWawancaraContent />;
+export default function SomePage() {
+  useEffect(() => {
+    debugAuthCookies();
+  }, []);
+
+  return <div>Check console...</div>;
 }

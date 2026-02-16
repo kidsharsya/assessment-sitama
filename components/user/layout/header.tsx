@@ -1,14 +1,15 @@
 'use client';
 import { User } from 'lucide-react';
 import Image from 'next/image';
+import { useAuthContext } from '@/context/AuthContext';
 
 // ============================================
 // Peserta Header Component - Untuk user SUDAH login
 // ============================================
 
 export function UserHeader() {
-  // Display name with fallback
-  const displayName = 'Muhammad Rizki';
+  const { displayName, user } = useAuthContext();
+  const roleName = user?.roles?.includes('mubaligh') ? 'Mubaligh' : 'Peserta';
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -28,7 +29,7 @@ export function UserHeader() {
           <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-2">
             <div className="text-right">
               <p className="text-xs sm:text-sm font-medium text-gray-900">{displayName}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500">Mubaligh</p>
+              <p className="text-[10px] sm:text-xs text-gray-500">{roleName}</p>
             </div>
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-teal-500 flex items-center justify-center bg-teal-50">
               <User className="w-4 h-4 sm:w-5 sm:h-5 text-teal-600" />

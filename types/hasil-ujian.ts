@@ -8,7 +8,7 @@
 export type ExamResultStatus = 'LULUS' | 'TIDAK LULUS';
 
 // ============================================
-// Category Score Types
+// Category Score Types (dari API leaderboard)
 // ============================================
 export interface CategoryScore {
   categoryCode: string;
@@ -17,68 +17,47 @@ export interface CategoryScore {
   maxScore: number;
   passingGrade: number;
   isPassed: boolean;
+  status: ExamResultStatus;
 }
 
 // ============================================
-// Participant Result Types
+// Leaderboard API Response Types
 // ============================================
-export interface ParticipantResult {
+export interface LeaderboardParticipant {
+  rank: number;
   id: string;
-  sessionId: string;
-  participantId: string;
-  participantName: string;
-  registrationNumber: string;
-  categoryScores: Record<string, CategoryScore>;
-  totalScore: number;
-  maxScore: number;
-  status: ExamResultStatus;
-  submittedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
+  name: string;
+  categories: CategoryScore[];
 }
 
-// ============================================
-// Leaderboard Types
-// ============================================
-export interface LeaderboardRow {
-  ranking: number;
-  participantId: string;
-  participantName: string;
-  registrationNumber: string;
-  categoryScores: Record<string, CategoryScore>;
-  totalScore: number;
-  maxScore: number;
-  status: ExamResultStatus;
-}
-
-export interface LeaderboardData {
-  sessionId: string;
-  sessionName: string;
-  dynamicColumns: string[]; // Category codes for dynamic columns
-  rows: LeaderboardRow[];
-  totalElements: number;
+export interface LeaderboardPagination {
+  currentPage: number;
   totalPages: number;
-  page: number;
+  totalElements: number;
   size: number;
+  hasNext: boolean;
+  hasPrevious: boolean;
+}
+
+export interface LeaderboardApiResponse {
+  success: boolean;
+  code: number;
+  data: {
+    success: boolean;
+    message: string;
+    data: {
+      participants: LeaderboardParticipant[];
+      pagination: LeaderboardPagination;
+    };
+  };
 }
 
 // ============================================
-// Statistics Types
+// Statistics Types (dihitung di client)
 // ============================================
 export interface ExamResultStats {
   total: number;
   lulus: number;
   tidakLulus: number;
   persentaseKelulusan: number;
-}
-
-// ============================================
-// Session with Results
-// ============================================
-export interface SessionWithResults {
-  sessionId: string;
-  sessionName: string;
-  sessionDate: string;
-  isPublished: boolean;
-  stats: ExamResultStats;
 }

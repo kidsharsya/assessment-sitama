@@ -1,25 +1,27 @@
 'use client';
 
 import { LogOut, ChevronDown, PanelLeftClose, PanelLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { clearAuthCookies } from '@/helpers/cookieHelper';
+import { AUTH_URLS } from '@/lib/constants';
+import { useAuthContext } from '@/context/AuthContext';
 
 // ============================================
 // Admin Header Component
 // ============================================
 
 interface AdminHeaderProps {
-  userName: string;
-  userRole?: string;
   isSidebarCollapsed: boolean;
   onToggleSidebar: () => void;
 }
 
-export function AdminHeader({ userName, userRole = 'Administrator', isSidebarCollapsed, onToggleSidebar }: AdminHeaderProps) {
-  const router = useRouter();
+export function AdminHeader({ isSidebarCollapsed, onToggleSidebar }: AdminHeaderProps) {
+  const { displayName, userRole, user } = useAuthContext();
+  const roleLabel = userRole || user?.defaultRole || 'Administrator';
 
   const handleLogout = () => {
-    router.push('/login/admin');
+    clearAuthCookies();
+    window.location.href = AUTH_URLS.ADMIN_LOGIN;
   };
 
   return (
@@ -39,11 +41,11 @@ export function AdminHeader({ userName, userRole = 'Administrator', isSidebarCol
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
               <div className="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">{userName.charAt(0).toUpperCase()}</span>
+                <span className="text-white text-sm font-medium">{displayName.charAt(0).toUpperCase()}</span>
               </div>
               <div className="text-left hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{userName}</p>
-                <p className="text-xs text-gray-500">{userRole}</p>
+                <p className="text-sm font-medium text-gray-900">{displayName}</p>
+                <p className="text-xs text-gray-500">{roleLabel}</p>
               </div>
               <ChevronDown className="w-4 h-4 text-gray-400" />
             </button>

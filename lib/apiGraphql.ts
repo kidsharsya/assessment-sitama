@@ -1,41 +1,42 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { getToken, getHasuraClaims } from '@/helpers/cookieHelper';
+import { getToken, getHasuraClaims, detectAppRole } from '@/helpers/cookieHelper';
 import { API_ENDPOINTS, AUTH_URLS } from '@/lib/constants';
 import { GraphQLResponse } from '@/types/auth.types';
 
 /**
  * Axios instance untuk Hasura GraphQL
- * Otomatis menambahkan Authorization header dari cookie
+ * Otomatis menambahkan Authorization header dari cookie (admin atau user)
  */
 const apiGraphql: AxiosInstance = axios.create({
   baseURL: API_ENDPOINTS.GRAPHQL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 detik
+  timeout: 30000,
 });
 
 // Request interceptor - tambahkan Authorization header atau Admin Secret
 apiGraphql.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = getToken();
+    const adminSecret = process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET;
 
-    if (token) {
-      // Authenticated: kirim Bearer token + role headers (sama seperti web-admin)
-      config.headers.Authorization = `Bearer ${token}`;
-      config.headers['x-app'] = 'admin';
-
-      // Decode claims untuk x-hasura-role
-      const claims = getHasuraClaims();
-      const allowedRoles = claims?.['x-hasura-allowed-roles'];
-      if (allowedRoles && allowedRoles.length > 0) {
-        config.headers['x-hasura-role'] = allowedRoles[0];
-      }
+    if (adminSecret) {
+      // Gunakan admin-secret saja — jangan campur dengan JWT/role headers
+      // karena Hasura bisa konflik jika kedua auth method dikirim bersamaan
+      config.headers['x-hasura-admin-secret'] = adminSecret;
     } else {
-      // Fallback: gunakan admin secret jika JWT tidak tersedia (development / cross-origin)
-      const adminSecret = process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET;
-      if (adminSecret) {
-        config.headers['x-hasura-admin-secret'] = adminSecret;
+      // Fallback: gunakan JWT dari cookie
+      const token = getToken();
+      const appRole = detectAppRole();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        config.headers['x-app'] = appRole === 'admin' ? 'admin' : 'app';
+
+        const claims = getHasuraClaims();
+        const allowedRoles = claims?.['x-hasura-allowed-roles'];
+        if (allowedRoles && allowedRoles.length > 0) {
+          config.headers['x-hasura-role'] = allowedRoles[0];
+        }
       }
     }
 
@@ -63,10 +64,12 @@ apiGraphql.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // Unauthorized - redirect ke login
+          // Unauthorized - redirect ke login sesuai role
           console.error('Unauthorized: Token tidak valid atau expired');
           if (typeof window !== 'undefined') {
-            window.location.href = AUTH_URLS.LOGIN;
+            const role = detectAppRole();
+            const loginUrl = role === 'user' ? AUTH_URLS.USER_LOGIN : AUTH_URLS.ADMIN_LOGIN;
+            window.location.href = loginUrl;
           }
           break;
         case 403:
@@ -112,20 +115,22 @@ export const apiRest: AxiosInstance = axios.create({
 // Copy interceptors ke REST instance
 apiRest.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-      config.headers['x-app'] = 'admin';
+    const adminSecret = process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET;
 
-      const claims = getHasuraClaims();
-      const allowedRoles = claims?.['x-hasura-allowed-roles'];
-      if (allowedRoles && allowedRoles.length > 0) {
-        config.headers['x-hasura-role'] = allowedRoles[0];
-      }
+    if (adminSecret) {
+      config.headers['x-hasura-admin-secret'] = adminSecret;
     } else {
-      const adminSecret = process.env.NEXT_PUBLIC_HASURA_ADMIN_SECRET;
-      if (adminSecret) {
-        config.headers['x-hasura-admin-secret'] = adminSecret;
+      const token = getToken();
+      const appRole = detectAppRole();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+        config.headers['x-app'] = appRole === 'admin' ? 'admin' : 'app';
+
+        const claims = getHasuraClaims();
+        const allowedRoles = claims?.['x-hasura-allowed-roles'];
+        if (allowedRoles && allowedRoles.length > 0) {
+          config.headers['x-hasura-role'] = allowedRoles[0];
+        }
       }
     }
     return config;
@@ -138,7 +143,7 @@ apiRest.interceptors.request.use(
  */
 export const apiStorage: AxiosInstance = axios.create({
   baseURL: API_ENDPOINTS.STORAGE,
-  timeout: 60000, // 60 detik untuk upload
+  // timeout: 60000,
 });
 
 apiStorage.interceptors.request.use(

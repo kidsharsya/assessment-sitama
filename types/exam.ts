@@ -2,22 +2,20 @@
 // Exam Types for User Exam Taking
 // ============================================
 
-import type { OptionLabel } from './bank-soal';
-
 // ============================================
 // Exam Option and Question Display Types
 // ============================================
 export interface ExamOption {
-  code: OptionLabel;
+  code: string;
   text: string;
-  imagePath?: string;
+  imagePath?: string | null;
 }
 
 export interface ExamDisplaySoal {
   questionId: string;
   number: number;
   text: string;
-  imagePath?: string;
+  imagePath?: string | null;
   options: ExamOption[];
   categoryCode: string;
 }
@@ -33,36 +31,46 @@ export interface JawabanStatus {
 
 export interface AnswerRecord {
   questionId: string;
+  number: number;
   answerCode: string | null;
   notSure: boolean;
 }
 
 // ============================================
-// Exam Category Types
+// Exam Category Types (from Manifest)
 // ============================================
 export interface ExamCategory {
   categoryId: string;
   categoryCode: string;
   categoryName: string;
-  isCompleted: boolean;
+  passingGrade: number;
+  questionIds: string[]; // ordered list of questionIds in this category
 }
 
 // ============================================
-// Exam Attempt Types
+// Manifest Question Entry (lightweight, no content)
 // ============================================
-export interface ExamAttempt {
+export interface ManifestQuestionEntry {
+  number: number;
+  questionId: string;
+  categoryCode: string;
+  optionShuffleOrder: number[];
+}
+
+// ============================================
+// Exam Session State (built from start + manifest + answer status)
+// ============================================
+export interface ExamSession {
   attemptId: string;
-  sessionId: string;
-  sessionName: string;
-  participantId: string;
-  participantName: string;
-  categories: ExamCategory[];
-  questions: ExamDisplaySoal[];
-  answers: AnswerRecord[];
-  durationSeconds: number;
-  startedAt: string;
-  endTime: string;
   status: 'IN_PROGRESS' | 'SUBMITTED' | 'EXPIRED';
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  categories: ExamCategory[];
+  /** Flat ordered list of all questions (from manifest) */
+  questions: ManifestQuestionEntry[];
+  /** Answer statuses indexed by questionId */
+  answers: Map<string, AnswerRecord>;
 }
 
 // ============================================

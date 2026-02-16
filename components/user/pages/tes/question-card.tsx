@@ -2,6 +2,7 @@
 
 import { Flag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { StorageService } from '@/services/storage.service';
 import type { ExamDisplaySoal } from '@/types/exam';
 
 // ============================================
@@ -22,11 +23,11 @@ interface QuestionCardProps {
   canGoNext: boolean;
 }
 
-export function QuestionCard({ currentIndex, totalSoal, soal, jawaban, ditandai, onSelectAnswer, onToggleFlag, onPrevious, onNext, canGoPrevious, canGoNext }: QuestionCardProps) {
+export function QuestionCard({ totalSoal, soal, jawaban, ditandai, onSelectAnswer, onToggleFlag, onPrevious, onNext, canGoPrevious, canGoNext }: QuestionCardProps) {
   if (!soal) {
     return (
       <div className="bg-white rounded-2xl border border-gray-200 p-6">
-        <div className="flex items-center justify-center min-h-[300px]">
+        <div className="flex items-center justify-center min-h-75">
           <p className="text-gray-500">Soal tidak ditemukan</p>
         </div>
       </div>
@@ -54,7 +55,7 @@ export function QuestionCard({ currentIndex, totalSoal, soal, jawaban, ditandai,
         {soal.imagePath && (
           <div className="mt-4">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={soal.imagePath} alt="Gambar Soal" className="max-h-48 sm:max-h-64 rounded-lg border" />
+            <img src={StorageService.getPublicUrl(soal.imagePath) || soal.imagePath} alt="Gambar Soal" className="max-h-48 sm:max-h-64 rounded-lg border" />
           </div>
         )}
       </div>

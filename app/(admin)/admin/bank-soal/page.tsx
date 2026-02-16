@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CategoryList, CategoryFormModal, PacketList, PacketFormModal, QuestionList, QuestionFormModal, DeleteConfirmModal } from '@/components/admin/pages/bank-soal';
 import { BankSoalService } from '@/services/bank-soal.service';
+import { StorageService } from '@/services/storage.service';
 import type { CategoryWithPackets, PacketWithQuestions, Question, CategoryFormInput, PacketFormInput, QuestionFormInput, ViewLevel, DeleteModalState, OptionLabel } from '@/types/bank-soal';
 
 // ============================================
@@ -216,10 +217,17 @@ export default function BankSoalPage() {
   const handleSaveQuestion = async (data: QuestionFormInput) => {
     if (!selectedPacket) return;
 
+    // Upload image file ke storage jika ada File baru
+    let processedData = { ...data };
+    if (data.imagePath instanceof File) {
+      const uploadedPath = await StorageService.uploadFile(data.imagePath);
+      processedData = { ...data, imagePath: uploadedPath };
+    }
+
     if (editingQuestion) {
-      await BankSoalService.updateQuestion(editingQuestion.id, data);
+      await BankSoalService.updateQuestion(editingQuestion.id, processedData);
     } else {
-      await BankSoalService.createQuestion(selectedPacket.id, data);
+      await BankSoalService.createQuestion(selectedPacket.id, processedData);
     }
     await refreshSelectedPacket();
     await refreshSelectedCategory();

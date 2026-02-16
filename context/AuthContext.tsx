@@ -3,13 +3,17 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthState } from '@/types/auth.types';
+import type { AppRole } from '@/helpers/cookieHelper';
 
 interface AuthContextType extends AuthState {
   isLoading: boolean;
   userId: string | null;
   userRole: string | null;
+  appRole: AppRole;
+  displayName: string;
   hasRole: (role: string) => boolean;
   isAdmin: () => boolean;
+  isUser: () => boolean;
   checkAuth: () => void;
   requireAuth: () => void;
 }
@@ -23,6 +27,7 @@ interface AuthProviderProps {
 /**
  * Auth Provider Component
  * Wrap aplikasi dengan provider ini untuk akses auth di seluruh app
+ * Mendukung admin (web-admin) dan user (web-app) cookies
  */
 export function AuthProvider({ children }: AuthProviderProps) {
   const auth = useAuth();

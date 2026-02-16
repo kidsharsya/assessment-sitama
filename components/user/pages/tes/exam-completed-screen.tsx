@@ -49,7 +49,7 @@ export function ExamCompletedScreen({ result }: ExamCompletedScreenProps) {
         </div>
 
         {/* Back Button */}
-        <Button className="w-full h-11 sm:h-12 text-sm sm:text-base rounded-xl bg-teal-600 hover:bg-teal-700" onClick={() => router.push('/tes-overview')}>
+        <Button className="w-full h-11 sm:h-12 text-sm sm:text-base rounded-xl bg-teal-600 hover:bg-teal-700" onClick={() => router.push('http://localhost:3000/app/home')}>
           Kembali ke Halaman Tes
         </Button>
       </div>
