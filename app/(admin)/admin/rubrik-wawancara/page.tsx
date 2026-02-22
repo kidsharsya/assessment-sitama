@@ -1,11 +1,5 @@
-'use client';
-import { useEffect } from 'react';
-import { debugAuthCookies } from '@/helpers/cookieHelper';
+import { RubrikWawancaraContent } from '@/components/admin/pages/rubrik-wawancara';
 
-export default function SomePage() {
-  useEffect(() => {
-    debugAuthCookies();
-  }, []);
-
-  return <div>Check console...</div>;
+export default function RubrikWawancaraPage() {
+  return <RubrikWawancaraContent />;
 }

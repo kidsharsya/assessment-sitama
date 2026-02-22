@@ -5,7 +5,7 @@ import { Plus, ChevronDown, ChevronUp, FileText, Percent, Edit, Trash2, Clipboar
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Pagination } from '@/components/ui/pagination';
-import { getKriteriaByRubrikId } from '@/lib/mock-data/rubrik-wawancara';
+import { RubrikWawancaraService } from '@/services/rubrik-wawancara.service';
 import type { RubrikWawancaraWithKriteria, Kriteria } from '@/types/rubrik-wawancara';
 
 // ============================================
@@ -48,8 +48,8 @@ export function RubrikList({ rubrikList, onCreateRubrik, onEditRubrik, onDeleteR
   };
 
   // Fetch criteria when rubrik is expanded
-  const fetchCriteriaForRubrik = useCallback((rubrikId: string) => {
-    // Set loading state - check current state inside to avoid stale closure
+  const fetchCriteriaForRubrik = useCallback(async (rubrikId: string) => {
+    // Check current cache state to avoid redundant fetches
     setCriteriaCache((prev) => {
       // Skip if already loading or already have data
       if (prev[rubrikId]?.isLoading || prev[rubrikId]?.criteria?.length > 0) {
@@ -62,11 +62,11 @@ export function RubrikList({ rubrikList, onCreateRubrik, onEditRubrik, onDeleteR
     });
 
     try {
-      const data = getKriteriaByRubrikId(rubrikId, 0, 100); // Get up to 100 criteria for preview
+      const data = await RubrikWawancaraService.getAllCriteriaByRubricId(rubrikId);
 
       setCriteriaCache((prev) => ({
         ...prev,
-        [rubrikId]: { criteria: data.content, isLoading: false, error: null },
+        [rubrikId]: { criteria: data, isLoading: false, error: null },
       }));
     } catch (err) {
       setCriteriaCache((prev) => ({

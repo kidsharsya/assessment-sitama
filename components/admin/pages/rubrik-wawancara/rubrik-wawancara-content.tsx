@@ -8,7 +8,7 @@ import { KriteriaList } from './kriteria-list';
 import { KriteriaFormModal } from './kriteria-form-modal';
 import { DeleteConfirmModal } from './delete-confirm-modal';
 import type { RubrikWawancaraWithKriteria, RubrikWawancaraFormInput, Kriteria, KriteriaFormInput } from '@/types/rubrik-wawancara';
-import { getRubriks, createRubrik, updateRubrik, deleteRubrik, toggleRubrikActive, getKriteriaByRubrikId, createKriteria, updateKriteria, deleteKriteria } from '@/lib/mock-data/rubrik-wawancara';
+import { RubrikWawancaraService } from '@/services/rubrik-wawancara.service';
 
 // ============================================
 // Rubrik Wawancara Content Component
@@ -66,11 +66,11 @@ export function RubrikWawancaraContent() {
   // Data Fetching
   // ============================================
 
-  const fetchRubrics = useCallback(() => {
+  const fetchRubrics = useCallback(async () => {
     setIsLoadingRubrics(true);
     setRubricError(null);
     try {
-      const data = getRubriks(currentPage, pageSize);
+      const data = await RubrikWawancaraService.getRubrics(currentPage, pageSize);
       setRubrics(data.content);
       setTotalPages(data.totalPages);
       setTotalElements(data.totalElements);
@@ -81,13 +81,13 @@ export function RubrikWawancaraContent() {
     }
   }, [currentPage, pageSize]);
 
-  const fetchCriteria = useCallback(() => {
+  const fetchCriteria = useCallback(async () => {
     if (!selectedRubrik?.id) return;
 
     setIsLoadingCriteria(true);
     setCriteriaError(null);
     try {
-      const data = getKriteriaByRubrikId(selectedRubrik.id, criteriaPage, criteriaPageSize);
+      const data = await RubrikWawancaraService.getCriteriaByRubricId(selectedRubrik.id, criteriaPage, criteriaPageSize);
       setCriteria(data.content);
       setCriteriaTotalPages(data.totalPages);
       setCriteriaTotalElements(data.totalElements);
@@ -96,7 +96,6 @@ export function RubrikWawancaraContent() {
     } finally {
       setIsLoadingCriteria(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRubrik?.id, criteriaPage, criteriaPageSize]);
 
   // Initial load
@@ -113,14 +112,14 @@ export function RubrikWawancaraContent() {
 
   // Update selectedRubrik kriteriaList when criteria changes
   // Use a ref to prevent infinite loop
-  const criteriaRef = useRef<Kriteria[]>([]);
+  const criteriaRef = useRef<string>('');
   useEffect(() => {
-    // Only update if criteria actually changed (by comparing ids)
-    const currentIds = criteria.map((k) => k.id).join(',');
-    const prevIds = criteriaRef.current.map((k) => k.id).join(',');
+    // Compare by ids + updatedAt + bobot to detect edits too (not just add/remove)
+    const currentKey = criteria.map((k) => `${k.id}:${k.updatedAt}:${k.bobot}`).join(',');
+    const prevKey = criteriaRef.current;
 
-    if (currentIds !== prevIds && selectedRubrik) {
-      criteriaRef.current = criteria;
+    if (currentKey !== prevKey && selectedRubrik) {
+      criteriaRef.current = currentKey;
       const totalBobot = criteria.reduce((sum, k) => sum + k.bobot, 0);
       setSelectedRubrik((prev) =>
         prev
@@ -170,27 +169,29 @@ export function RubrikWawancaraContent() {
   }, []);
 
   const handleToggleActive = useCallback(
-    (rubrikId: string) => {
+    async (rubrikId: string) => {
       setActionError(null);
       try {
-        toggleRubrikActive(rubrikId);
-        fetchRubrics();
+        const rubrik = rubrics.find((r) => r.id === rubrikId);
+        if (!rubrik) return;
+        await RubrikWawancaraService.toggleRubricActive(rubrikId, rubrik.isActive);
+        await fetchRubrics();
       } catch (err) {
         setActionError(err instanceof Error ? err.message : 'Gagal mengubah status rubrik');
       }
     },
-    [fetchRubrics],
+    [rubrics, fetchRubrics],
   );
 
   const handleSaveRubrik = useCallback(
-    (data: RubrikWawancaraFormInput) => {
+    async (data: RubrikWawancaraFormInput) => {
       setActionError(null);
 
       try {
         if (rubrikModalMode === 'create') {
-          createRubrik(data);
+          await RubrikWawancaraService.createRubric(data);
         } else if (editingRubrik) {
-          updateRubrik(editingRubrik.id, data);
+          await RubrikWawancaraService.updateRubric(editingRubrik.id, data);
 
           // Update selectedRubrik if it's the one being edited
           if (selectedRubrik?.id === editingRubrik.id) {
@@ -208,7 +209,7 @@ export function RubrikWawancaraContent() {
         }
 
         setIsRubrikModalOpen(false);
-        fetchRubrics();
+        await fetchRubrics();
       } catch (err) {
         setActionError(err instanceof Error ? err.message : 'Gagal menyimpan rubrik');
       }
@@ -224,7 +225,7 @@ export function RubrikWawancaraContent() {
     setViewMode('list');
     setSelectedRubrik(null);
     setCriteria([]);
-    criteriaRef.current = [];
+    criteriaRef.current = '';
   }, []);
 
   const handleCreateKriteria = useCallback(() => {
@@ -252,21 +253,21 @@ export function RubrikWawancaraContent() {
   );
 
   const handleSaveKriteria = useCallback(
-    (data: KriteriaFormInput) => {
+    async (data: KriteriaFormInput) => {
       if (!selectedRubrik) return;
 
       setActionError(null);
 
       try {
         if (kriteriaModalMode === 'create') {
-          createKriteria(selectedRubrik.id, data);
+          await RubrikWawancaraService.createCriteria(selectedRubrik.id, data);
         } else if (editingKriteria) {
-          updateKriteria(editingKriteria.id, data);
+          await RubrikWawancaraService.updateCriteria(editingKriteria.id, data);
         }
 
         setIsKriteriaModalOpen(false);
-        fetchCriteria();
-        fetchRubrics(); // Also refresh rubrics to update totals
+        await fetchCriteria();
+        await fetchRubrics(); // Also refresh rubrics to update totals
       } catch (err) {
         setActionError(err instanceof Error ? err.message : 'Gagal menyimpan kriteria');
       }
@@ -278,14 +279,14 @@ export function RubrikWawancaraContent() {
   // Delete Handler
   // ============================================
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = useCallback(async () => {
     if (!deleteTarget) return;
 
     setActionError(null);
 
     try {
       if (deleteTarget.type === 'rubrik') {
-        deleteRubrik(deleteTarget.id);
+        await RubrikWawancaraService.deleteRubric(deleteTarget.id);
 
         // If deleted rubrik is currently selected, go back to list
         if (selectedRubrik?.id === deleteTarget.id) {
@@ -293,11 +294,11 @@ export function RubrikWawancaraContent() {
           setSelectedRubrik(null);
         }
 
-        fetchRubrics();
+        await fetchRubrics();
       } else if (deleteTarget.type === 'kriteria') {
-        deleteKriteria(deleteTarget.id);
-        fetchCriteria();
-        fetchRubrics(); // Also refresh rubrics to update totals
+        await RubrikWawancaraService.deleteCriteria(deleteTarget.id);
+        await fetchCriteria();
+        await fetchRubrics(); // Also refresh rubrics to update totals
       }
 
       setDeleteTarget(null);

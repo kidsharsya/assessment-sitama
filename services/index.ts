@@ -5,3 +5,4 @@ export { BankSoalService } from './bank-soal.service';
 export { ExamSessionService } from './exam-session.service';
 export { AssessmentService } from './assessment.service';
 export { StorageService } from './storage.service';
+export { RubrikWawancaraService } from './rubrik-wawancara.service';

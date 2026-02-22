@@ -4,4 +4,5 @@ export * from './bank-soal';
 export * from './exam-session';
 export * from './rubrik-wawancara';
 export * from './hasil-ujian';
-export * from './exam';
+export * from './interview-session';
+export * from './interview-process';
