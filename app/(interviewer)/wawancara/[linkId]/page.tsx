@@ -21,20 +21,16 @@ export default function InterviewerWawancaraPage() {
   // PIN verification state
   const { isVerified, verify } = useInterviewPinVerification(sessionToken);
 
-  // Dashboard data - fetch is controlled by the hook internally based on token availability
-  const { dashboard, isLoading: isLoadingDashboard, error: dashboardError, refetch: refetchDashboard } = useInterviewDashboard();
+  // Dashboard data - only fetches after PIN is verified
+  const { dashboard, isLoading: isLoadingDashboard, error: dashboardError, refetch: refetchDashboard } = useInterviewDashboard(isVerified);
 
   // Handle PIN verification
   const handleVerify = useCallback(
     async (pin: string): Promise<boolean> => {
       const success = await verify(pin);
-      if (success) {
-        // Trigger dashboard fetch after successful verification
-        await refetchDashboard();
-      }
       return success;
     },
-    [verify, refetchDashboard],
+    [verify],
   );
 
   // Loading session info

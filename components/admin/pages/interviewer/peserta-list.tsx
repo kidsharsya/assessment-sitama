@@ -70,6 +70,11 @@ export function PesertaList({ participants, selectedParticipantId, onSelectParti
                       {participant.status === 'COMPLETED' && participant.finalScore !== null && (
                         <div className="mt-1 text-xs text-gray-500">
                           Nilai: <span className="font-semibold text-teal-600">{participant.finalScore}</span>
+                          {participant.decision && (
+                            <span className={cn('ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium', participant.decision === 'LULUS' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700')}>
+                              {participant.decision === 'LULUS' ? 'Lulus' : 'Tidak Lulus'}
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>

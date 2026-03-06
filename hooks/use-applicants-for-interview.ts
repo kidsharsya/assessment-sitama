@@ -1,51 +1,45 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { mockApplicants } from '@/lib/mock-data/interview-session';
+import { InterviewSessionService } from '@/services';
+import type { ExamSessionUser } from '@/types/interview-session';
 
 // ============================================
-// ApplicantForSelection Type
+// useExamSessionUsers - Fetch users who completed exam session (eligible for interview)
 // ============================================
 
-export interface ApplicantForSelection {
-  applicationId: string;
-  fullName: string;
-  email: string;
-}
-
-// ============================================
-// useApplicantsForInterview - Fetch applicants for interview selection
-// ============================================
-
-interface UseApplicantsForInterviewReturn {
-  applicants: ApplicantForSelection[];
+interface UseExamSessionUsersReturn {
+  users: ExamSessionUser[];
   isLoading: boolean;
 }
 
-export function useApplicantsForInterview(): UseApplicantsForInterviewReturn {
-  const [applicants, setApplicants] = useState<ApplicantForSelection[]>([]);
+export function useExamSessionUsers(examSessionId: string): UseExamSessionUsersReturn {
+  const [users, setUsers] = useState<ExamSessionUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchApplicants = useCallback(async () => {
+  const fetchUsers = useCallback(async () => {
+    if (!examSessionId) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      setApplicants(mockApplicants);
+      const result = await InterviewSessionService.getExamSessionUsers(examSessionId);
+      setUsers(result);
     } catch (err) {
-      console.error('Failed to fetch applicants:', err);
-      setApplicants([]);
+      console.error('Failed to fetch exam session users:', err);
+      setUsers([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [examSessionId]);
 
   useEffect(() => {
-    fetchApplicants();
-  }, [fetchApplicants]);
+    fetchUsers();
+  }, [fetchUsers]);
 
   return {
-    applicants,
+    users,
     isLoading,
   };
 }

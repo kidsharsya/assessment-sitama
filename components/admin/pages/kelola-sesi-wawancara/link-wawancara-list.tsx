@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Link2, Users, Copy, ExternalLink, Edit, Trash2, CheckCircle, XCircle, ClipboardList, KeyRound, Eye, EyeOff, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Link2, Users, Copy, ExternalLink, Edit, Trash2, CheckCircle, XCircle, ClipboardList, KeyRound, Eye, EyeOff, ToggleLeft, ToggleRight, Mic, Calendar } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { InterviewSession, InterviewSessionStatus } from '@/types/interview-session';
@@ -101,9 +101,10 @@ export function LinkWawancaraList({ sessionList, onCreateLink, onEditLink, onDel
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50/80">
-                  <th className="text-left py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Interviewer</th>
+                  <th className="text-left py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Pewawancara</th>
                   <th className="text-left py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Rubrik</th>
-                  <th className="text-center py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Pelamar</th>
+                  <th className="text-center py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Peserta</th>
+                  <th className="text-center py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Jadwal</th>
                   <th className="text-center py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                   <th className="text-center py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">PIN Akses</th>
                   <th className="text-left py-4 px-5 text-xs font-semibold text-gray-600 uppercase tracking-wider">Link</th>
@@ -146,8 +147,21 @@ export function LinkWawancaraList({ sessionList, onCreateLink, onEditLink, onDel
                       <td className="py-4 px-5 text-center">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-full">
                           <Users className="w-4 h-4 text-gray-500" />
-                          <span className="text-sm font-medium text-gray-700">{session.jumlahPelamar}</span>
+                          <span className="text-sm font-medium text-gray-700">{session.jumlahPeserta}</span>
                         </div>
+                      </td>
+                      <td className="py-4 px-5 text-center">
+                        {session.scheduledStartAt ? (
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-md">
+                            <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                            <span className="text-xs text-blue-700">
+                              {new Date(session.scheduledStartAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}{' '}
+                              {new Date(session.scheduledStartAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400 italic">Belum dijadwalkan</span>
+                        )}
                       </td>
                       <td className="py-4 px-5 text-center">
                         <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full', status.bgColor, status.color)}>

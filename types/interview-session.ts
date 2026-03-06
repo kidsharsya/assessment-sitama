@@ -9,15 +9,18 @@ export type InterviewSessionStatus = 'aktif' | 'nonaktif';
  */
 export interface InterviewSession {
   id: string;
+  examSessionId: string;
   namaInterviewer: string;
   emailInterviewer?: string;
   rubrikId: string;
   rubrikNama: string;
-  jumlahPelamar: number;
+  jumlahPeserta: number;
   status: InterviewSessionStatus;
   accessPin: string;
   link: string;
+  sessionToken: string;
   isActive: boolean;
+  scheduledStartAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,21 +32,24 @@ export interface InterviewSessionFormInput {
   namaInterviewer: string;
   emailInterviewer: string;
   rubrikId: string;
-  applicationIds: string[];
+  participantUserIds: string[];
   status: InterviewSessionStatus;
   accessPin: string;
+  scheduledStartAt: string;
 }
 
 /**
  * Request untuk create interview session (dikirim ke API)
  */
 export interface CreateInterviewSessionRequest {
+  examSessionId: string;
   rubricId: string;
   interviewerName: string;
   interviewerEmail?: string;
   accessPin: string;
-  applicationIds: string[];
+  participantUserIds: string[];
   isActive: boolean;
+  scheduledStartAt?: string;
 }
 
 /**
@@ -54,8 +60,9 @@ export interface UpdateInterviewSessionRequest {
   interviewerName: string;
   interviewerEmail?: string;
   accessPin: string;
-  applicationIds: string[];
+  participantUserIds: string[];
   isActive: boolean;
+  scheduledStartAt?: string;
 }
 
 /**
@@ -63,11 +70,39 @@ export interface UpdateInterviewSessionRequest {
  */
 export interface ApiInterviewSessionDetail {
   id: string;
+  examSessionId: string;
   interviewerName: string;
   interviewerEmail?: string;
   rubricId: string;
   accessPin: string;
+  sessionToken: string;
   isActive: boolean;
+  scheduledStartAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Peserta yang eligible untuk wawancara (dari exam_session_participants)
+ */
+export interface ExamSessionUser {
+  userId: string;
+  displayName: string;
+  email: string;
+  avatarUrl?: string;
+}
+
+/**
+ * Participant dalam interview session (dari interview_participants)
+ */
+export interface InterviewParticipant {
+  id: string;
+  sessionId: string;
+  participantReference: string; // userId
+  status: string;
+  finalScore: number | null;
+  interviewerNotes?: string;
+  scoreDetails?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

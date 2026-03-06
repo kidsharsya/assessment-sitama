@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { InterviewSession, ApiInterviewSessionDetail, CreateInterviewSessionRequest, UpdateInterviewSessionRequest } from '@/types/interview-session';
-import { mockInterviewSessions, mockSessionDetails, mockParticipantIds } from '@/lib/mock-data/interview-session';
+import { InterviewSessionService } from '@/services';
 
 // ============================================
-// useInterviewSessions - List sesi wawancara
+// useInterviewSessions - List sesi wawancara by exam session
 // ============================================
 
 interface UseInterviewSessionsReturn {
@@ -23,80 +23,63 @@ interface UseInterviewSessionsReturn {
   refetch: () => Promise<void>;
 }
 
-export function useInterviewSessions(): UseInterviewSessionsReturn {
+export function useInterviewSessions(examSessionId: string): UseInterviewSessionsReturn {
   const [sessions, setSessions] = useState<InterviewSession[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const pageSize = 10;
 
   const fetchSessions = useCallback(async () => {
+    if (!examSessionId) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setSessions([...mockInterviewSessions]);
+      const result = await InterviewSessionService.getSessions(examSessionId, currentPage, pageSize);
+      setSessions(result.content);
+      setTotalElements(result.totalElements);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memuat sesi wawancara');
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [examSessionId, currentPage]);
 
   useEffect(() => {
     fetchSessions();
-  }, [fetchSessions, currentPage]);
+  }, [fetchSessions]);
 
-  const createSession = useCallback(async (data: CreateInterviewSessionRequest) => {
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    const newSession: InterviewSession = {
-      id: `session-${Date.now()}`,
-      namaInterviewer: data.interviewerName,
-      emailInterviewer: data.interviewerEmail,
-      rubrikId: data.rubricId,
-      rubrikNama: 'Rubrik Baru',
-      jumlahPelamar: data.applicationIds.length,
-      status: data.isActive ? 'aktif' : 'nonaktif',
-      accessPin: data.accessPin,
-      link: `/wawancara/link-${Date.now()}`,
-      isActive: data.isActive,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setSessions((prev) => [newSession, ...prev]);
-  }, []);
+  const createSession = useCallback(
+    async (data: CreateInterviewSessionRequest) => {
+      await InterviewSessionService.createSession({
+        ...data,
+        examSessionId,
+      });
+      await fetchSessions();
+    },
+    [examSessionId, fetchSessions],
+  );
 
-  const updateSession = useCallback(async (id: string, data: UpdateInterviewSessionRequest) => {
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    setSessions((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? {
-              ...s,
-              namaInterviewer: data.interviewerName,
-              emailInterviewer: data.interviewerEmail,
-              rubrikId: data.rubricId,
-              accessPin: data.accessPin,
-              jumlahPelamar: data.applicationIds.length,
-              status: data.isActive ? 'aktif' : 'nonaktif',
-              isActive: data.isActive,
-              updatedAt: new Date().toISOString(),
-            }
-          : s,
-      ),
-    );
-  }, []);
+  const updateSession = useCallback(
+    async (id: string, data: UpdateInterviewSessionRequest) => {
+      await InterviewSessionService.updateSession(id, data);
+      await fetchSessions();
+    },
+    [fetchSessions],
+  );
 
-  const deleteSession = useCallback(async (id: string) => {
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    setSessions((prev) => prev.filter((s) => s.id !== id));
-  }, []);
+  const deleteSession = useCallback(
+    async (id: string) => {
+      await InterviewSessionService.deleteSession(id);
+      await fetchSessions();
+    },
+    [fetchSessions],
+  );
 
-  const totalElements = sessions.length;
   const totalPages = Math.max(1, Math.ceil(totalElements / pageSize));
 
   return {
@@ -121,35 +104,32 @@ export function useInterviewSessions(): UseInterviewSessionsReturn {
 
 interface UseInterviewSessionReturn {
   session: ApiInterviewSessionDetail | null;
-  participantIds: string[];
+  participantUserIds: string[];
   isLoading: boolean;
   refetch: () => Promise<void>;
 }
 
 export function useInterviewSession(sessionId: string | null): UseInterviewSessionReturn {
   const [session, setSession] = useState<ApiInterviewSessionDetail | null>(null);
-  const [participantIds, setParticipantIds] = useState<string[]>([]);
+  const [participantUserIds, setParticipantUserIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchSession = useCallback(async () => {
     if (!sessionId) {
       setSession(null);
-      setParticipantIds([]);
+      setParticipantUserIds([]);
       return;
     }
 
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      const detail = mockSessionDetails[sessionId] || null;
-      const ids = mockParticipantIds[sessionId] || [];
+      const [detail, userIds] = await Promise.all([InterviewSessionService.getSessionById(sessionId), InterviewSessionService.getParticipantUserIds(sessionId)]);
       setSession(detail);
-      setParticipantIds(ids);
+      setParticipantUserIds(userIds);
     } catch (err) {
       console.error('Failed to fetch session:', err);
       setSession(null);
-      setParticipantIds([]);
+      setParticipantUserIds([]);
     } finally {
       setIsLoading(false);
     }
@@ -161,7 +141,7 @@ export function useInterviewSession(sessionId: string | null): UseInterviewSessi
 
   return {
     session,
-    participantIds,
+    participantUserIds,
     isLoading,
     refetch: fetchSession,
   };

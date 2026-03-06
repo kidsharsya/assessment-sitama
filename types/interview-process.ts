@@ -8,6 +8,11 @@
 export type ParticipantStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
 
 /**
+ * Keputusan wawancara
+ */
+export type InterviewDecision = 'LULUS' | 'TIDAK_LULUS';
+
+/**
  * Info sesi wawancara (untuk validasi link)
  */
 export interface InterviewSessionInfo {
@@ -23,15 +28,19 @@ export interface InterviewSessionInfo {
 export interface DashboardParticipant {
   participantId: string;
   applicantName: string;
+  participantReference: string;
   status: ParticipantStatus;
   finalScore: number | null;
+  decision: InterviewDecision | null;
 }
 
 /**
  * Info sesi di dashboard
  */
 export interface DashboardSessionInfo {
+  sessionId: string;
   interviewerName: string;
+  interviewerEmail: string;
   rubricName: string;
 }
 
@@ -87,7 +96,7 @@ export interface FormApplicant {
 export interface ExistingAssessmentDetail {
   criteriaId: string;
   score: number;
-  notes?: string;
+  note?: string;
 }
 
 /**
@@ -96,6 +105,8 @@ export interface ExistingAssessmentDetail {
 export interface ExistingAssessment {
   details: ExistingAssessmentDetail[];
   notes: string;
+  decision: InterviewDecision | null;
+  finalScore: number | null;
   submittedAt: string;
 }
 
@@ -113,9 +124,10 @@ export interface ParticipantAssessmentForm {
  */
 export interface SubmitScoreRequest {
   notes: string;
+  decision: InterviewDecision;
   details: Array<{
     criteriaId: string;
     score: number;
-    notes?: string;
+    note?: string;
   }>;
 }

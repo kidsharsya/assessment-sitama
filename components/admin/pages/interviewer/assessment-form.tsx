@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
-import type { ParticipantAssessmentForm, SubmitScoreRequest, ScoreRange, FormCriteria } from '@/types/interview-process';
+import type { ParticipantAssessmentForm, SubmitScoreRequest, ScoreRange, FormCriteria, InterviewDecision } from '@/types/interview-process';
 
 // ============================================
 // Assessment Form Component (untuk Interviewer)
@@ -47,14 +47,15 @@ export function AssessmentForm({ participantForm, onSave, isSaving = false, erro
     const initial: Record<string, string> = {};
     if (existingAssessment?.details) {
       existingAssessment.details.forEach((detail) => {
-        if (detail.notes) {
-          initial[detail.criteriaId] = detail.notes;
+        if (detail.note) {
+          initial[detail.criteriaId] = detail.note;
         }
       });
     }
     return initial;
   });
   const [notes, setNotes] = useState(existingAssessment?.notes || '');
+  const [decision, setDecision] = useState<InterviewDecision | null>(existingAssessment?.decision || null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [expandedRangeInfo, setExpandedRangeInfo] = useState<Record<string, boolean>>({});
 
@@ -107,6 +108,10 @@ export function AssessmentForm({ participantForm, onSave, isSaving = false, erro
       }
     });
 
+    if (!decision) {
+      newErrors['_decision'] = 'Pilih keputusan wawancara';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -117,11 +122,12 @@ export function AssessmentForm({ participantForm, onSave, isSaving = false, erro
     const details = rubric.criteria.map((criteria) => ({
       criteriaId: criteria.id,
       score: selectedScores[criteria.id],
-      ...(criteriaNotes[criteria.id] ? { notes: criteriaNotes[criteria.id] } : {}),
+      ...(criteriaNotes[criteria.id] ? { note: criteriaNotes[criteria.id] } : {}),
     }));
 
     onSave({
       notes,
+      decision: decision!,
       details,
     });
   };
@@ -231,6 +237,42 @@ export function AssessmentForm({ participantForm, onSave, isSaving = false, erro
             <div className="mt-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Catatan Tambahan</label>
               <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} placeholder="Tulis catatan atau observasi tambahan mengenai kandidat..." className="resize-none" />
+            </div>
+
+            {/* Keputusan Wawancara */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Keputusan Wawancara</label>
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDecision('LULUS');
+                    if (errors['_decision']) setErrors((prev) => ({ ...prev, _decision: '' }));
+                  }}
+                  className={cn(
+                    'flex-1 py-3 px-4 rounded-lg border-2 font-semibold text-sm transition-all',
+                    decision === 'LULUS' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 bg-white text-gray-600 hover:border-green-300 hover:bg-green-50/50',
+                  )}
+                >
+                  <CheckCircle className={cn('w-5 h-5 mx-auto mb-1', decision === 'LULUS' ? 'text-green-600' : 'text-gray-400')} />
+                  LULUS
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDecision('TIDAK_LULUS');
+                    if (errors['_decision']) setErrors((prev) => ({ ...prev, _decision: '' }));
+                  }}
+                  className={cn(
+                    'flex-1 py-3 px-4 rounded-lg border-2 font-semibold text-sm transition-all',
+                    decision === 'TIDAK_LULUS' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:bg-red-50/50',
+                  )}
+                >
+                  <AlertCircle className={cn('w-5 h-5 mx-auto mb-1', decision === 'TIDAK_LULUS' ? 'text-red-600' : 'text-gray-400')} />
+                  TIDAK LULUS
+                </button>
+              </div>
+              {errors['_decision'] && <p className="mt-2 text-xs text-red-500">{errors['_decision']}</p>}
             </div>
 
             {/* Submit Button */}

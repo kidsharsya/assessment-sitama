@@ -7,23 +7,41 @@ import { LinkWawancaraFormModal } from './link-wawancara-form-modal';
 import { DeleteConfirmModal } from './delete-confirm-modal';
 import { useInterviewSessions, useInterviewSession } from '@/hooks/use-interview-session';
 import { useInterviewRubrics } from '@/hooks/use-interview-rubrics';
-import { useApplicantsForInterview } from '@/hooks/use-applicants-for-interview';
+import { useExamSessionUsers } from '@/hooks/use-applicants-for-interview';
 import { Pagination } from '@/components/ui/pagination';
+import { InterviewSessionService } from '@/services';
 import type { InterviewSession, InterviewSessionFormInput, CreateInterviewSessionRequest, UpdateInterviewSessionRequest } from '@/types/interview-session';
 
 // ============================================
 // Manajemen Wawancara Content Component
 // ============================================
 
-export function ManajemenWawancaraContent() {
-  // Fetch interview sessions
-  const { sessions, isLoading: isLoadingSessions, error: sessionsError, currentPage, totalPages, totalElements, pageSize, setPage, createSession, updateSession, deleteSession, refetch: refetchSessions } = useInterviewSessions();
+interface ManajemenWawancaraContentProps {
+  examSessionId: string;
+}
+
+export function ManajemenWawancaraContent({ examSessionId }: ManajemenWawancaraContentProps) {
+  // Fetch interview sessions for this exam session
+  const {
+    sessions,
+    isLoading: isLoadingSessions,
+    error: sessionsError,
+    currentPage,
+    totalPages,
+    totalElements,
+    pageSize,
+    setPage,
+    createSession,
+    updateSession,
+    deleteSession,
+    refetch: refetchSessions,
+  } = useInterviewSessions(examSessionId);
 
   // Fetch rubrics for selection
   const { rubrics, isLoading: isLoadingRubrics } = useInterviewRubrics(0, 100);
 
-  // Fetch applicants for selection (eligible for interview)
-  const { applicants, isLoading: isLoadingApplicants } = useApplicantsForInterview();
+  // Fetch exam session users (eligible for interview)
+  const { users: examUsers, isLoading: isLoadingUsers } = useExamSessionUsers(examSessionId);
 
   // Modal states
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -31,7 +49,7 @@ export function ManajemenWawancaraContent() {
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   // Fetch session detail when editing
-  const { session: editingSession, participantIds: editingParticipantIds, isLoading: isLoadingEditSession, refetch: refetchEditSession } = useInterviewSession(editingSessionId);
+  const { session: editingSession, participantUserIds: editingParticipantUserIds, isLoading: isLoadingEditSession, refetch: refetchEditSession } = useInterviewSession(editingSessionId);
 
   // Delete modal state
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -78,12 +96,14 @@ export function ManajemenWawancaraContent() {
       try {
         if (formModalMode === 'create') {
           const request: CreateInterviewSessionRequest = {
+            examSessionId,
             rubricId: data.rubrikId,
             interviewerName: data.namaInterviewer,
             interviewerEmail: data.emailInterviewer || undefined,
             accessPin: data.accessPin,
-            applicationIds: data.applicationIds,
+            participantUserIds: data.participantUserIds,
             isActive: data.status === 'aktif',
+            scheduledStartAt: data.scheduledStartAt ? new Date(data.scheduledStartAt).toISOString() : undefined,
           };
           await createSession(request);
         } else if (editingSessionId) {
@@ -92,8 +112,9 @@ export function ManajemenWawancaraContent() {
             interviewerName: data.namaInterviewer,
             interviewerEmail: data.emailInterviewer || undefined,
             accessPin: data.accessPin,
-            applicationIds: data.applicationIds,
+            participantUserIds: data.participantUserIds,
             isActive: data.status === 'aktif',
+            scheduledStartAt: data.scheduledStartAt ? new Date(data.scheduledStartAt).toISOString() : undefined,
           };
           await updateSession(editingSessionId, request);
         }
@@ -104,7 +125,7 @@ export function ManajemenWawancaraContent() {
         setIsSaving(false);
       }
     },
-    [formModalMode, editingSessionId, createSession, updateSession],
+    [formModalMode, editingSessionId, examSessionId, createSession, updateSession],
   );
 
   const handleConfirmDelete = useCallback(async () => {
@@ -122,14 +143,16 @@ export function ManajemenWawancaraContent() {
   const handleToggleActive = useCallback(
     async (sessionId: string) => {
       try {
-        const { toggleInterviewSessionActive } = await import('@/lib/api/services/interview-session');
-        await toggleInterviewSessionActive(sessionId);
-        await refetchSessions();
+        const session = sessions.find((s) => s.id === sessionId);
+        if (session) {
+          await InterviewSessionService.toggleActive(sessionId, session.isActive);
+          await refetchSessions();
+        }
       } catch (err) {
         console.error('Failed to toggle session status:', err);
       }
     },
-    [refetchSessions],
+    [sessions, refetchSessions],
   );
 
   const handlePageChange = useCallback(
@@ -203,9 +226,9 @@ export function ManajemenWawancaraContent() {
         session={editingSession}
         mode={formModalMode}
         rubrikList={rubrics}
-        applicantList={applicants}
-        selectedApplicationIds={editingParticipantIds}
-        isLoading={isLoadingRubrics || isLoadingApplicants}
+        userList={examUsers}
+        selectedUserIds={editingParticipantUserIds}
+        isLoading={isLoadingRubrics || isLoadingUsers}
         isLoadingSession={isLoadingEditSession}
         isSaving={isSaving}
         onRefreshParticipants={refetchEditSession}

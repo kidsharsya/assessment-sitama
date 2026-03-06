@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { InterviewSessionInfo, InterviewDashboard, ParticipantAssessmentForm, SubmitScoreRequest } from '@/types/interview-process';
-import { mockSessionInfo, mockInterviewDashboard, mockParticipantForm, mockParticipantFormWithAssessment } from '@/lib/mock-data/interview-session';
+import { InterviewProcessService, getInterviewerToken } from '@/services/interview-process.service';
 
 // ============================================
 // useInterviewSessionInfo - Validasi link wawancara
@@ -30,15 +30,11 @@ export function useInterviewSessionInfo(sessionToken: string): UseInterviewSessi
       setIsLoading(true);
       setError(null);
       try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        // Mock: any token is valid for demo purposes
-        setSessionInfo({
-          ...mockSessionInfo,
-          sessionId: sessionToken,
-        });
+        const info = await InterviewProcessService.getSessionInfo(sessionToken);
+        setSessionInfo(info);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Gagal memvalidasi link wawancara');
+        setSessionInfo({ isValid: false, interviewerName: '' });
       } finally {
         setIsLoading(false);
       }
@@ -60,19 +56,14 @@ interface UseInterviewPinVerificationReturn {
 }
 
 export function useInterviewPinVerification(sessionToken: string): UseInterviewPinVerificationReturn {
-  const [isVerified, setIsVerified] = useState(false);
+  const [isVerified, setIsVerified] = useState(() => !!getInterviewerToken());
 
   const verify = useCallback(
     async (pin: string): Promise<boolean> => {
       try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        // Mock: accept any 6-char pin for demo
-        if (pin.length === 6 && sessionToken) {
-          setIsVerified(true);
-          return true;
-        }
-        return false;
+        await InterviewProcessService.verifyPin(sessionToken, pin);
+        setIsVerified(true);
+        return true;
       } catch {
         return false;
       }
@@ -94,18 +85,17 @@ interface UseInterviewDashboardReturn {
   refetch: () => Promise<void>;
 }
 
-export function useInterviewDashboard(): UseInterviewDashboardReturn {
+export function useInterviewDashboard(enabled: boolean): UseInterviewDashboardReturn {
   const [dashboard, setDashboard] = useState<InterviewDashboard | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboard = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setDashboard({ ...mockInterviewDashboard });
+      const data = await InterviewProcessService.getDashboard();
+      setDashboard(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memuat dashboard');
     } finally {
@@ -114,8 +104,10 @@ export function useInterviewDashboard(): UseInterviewDashboardReturn {
   }, []);
 
   useEffect(() => {
-    fetchDashboard();
-  }, [fetchDashboard]);
+    if (enabled) {
+      fetchDashboard();
+    }
+  }, [enabled, fetchDashboard]);
 
   return { dashboard, isLoading, error, refetch: fetchDashboard };
 }
@@ -134,47 +126,40 @@ export function useParticipantForm(participantId: string | null): UseParticipant
   const [form, setForm] = useState<ParticipantAssessmentForm | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchForm = useCallback(async () => {
-    if (!participantId) {
-      setForm(null);
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 400));
-      // Mock: participant-1 has existing assessment, others don't
-      if (participantId === 'participant-1') {
-        setForm({ ...mockParticipantFormWithAssessment });
-      } else {
-        // Use mock form with adjusted applicant name based on participant id
-        const participantIndex = parseInt(participantId.split('-')[1]) || 1;
-        const names = ['Ahmad Rizky Pratama', 'Dewi Putri Lestari', 'Fajar Nugroho'];
-        const emails = ['ahmad.rizky@mubaligh.id', 'dewi.putri@mubaligh.id', 'fajar.nugroho@mubaligh.id'];
-
-        setForm({
-          ...mockParticipantForm,
-          applicant: {
-            name: names[participantIndex - 1] || names[0],
-            email: emails[participantIndex - 1] || emails[0],
-          },
-          existingAssessment: null,
-        });
+  const fetchForm = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!participantId) {
+        setForm(null);
+        return;
       }
-    } catch (err) {
-      console.error('Failed to fetch form:', err);
-      setForm(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [participantId]);
+
+      setIsLoading(true);
+      try {
+        const data = await InterviewProcessService.getParticipantForm(participantId);
+        if (!signal?.aborted) {
+          setForm(data);
+        }
+      } catch (err) {
+        if (!signal?.aborted) {
+          console.error('Failed to fetch form:', err);
+          setForm(null);
+        }
+      } finally {
+        if (!signal?.aborted) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [participantId],
+  );
 
   useEffect(() => {
-    fetchForm();
+    const controller = new AbortController();
+    fetchForm(controller.signal);
+    return () => controller.abort();
   }, [fetchForm]);
 
-  return { form, isLoading, refetch: fetchForm };
+  return { form, isLoading, refetch: () => fetchForm() };
 }
 
 // ============================================
@@ -195,9 +180,7 @@ export function useSubmitScore(): UseSubmitScoreReturn {
     setIsSubmitting(true);
     setError(null);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      console.log('Score submitted for participant:', participantId, data);
+      await InterviewProcessService.submitScore(participantId, data);
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal menyimpan penilaian');

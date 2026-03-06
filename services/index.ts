@@ -6,3 +6,5 @@ export { ExamSessionService } from './exam-session.service';
 export { AssessmentService } from './assessment.service';
 export { StorageService } from './storage.service';
 export { RubrikWawancaraService } from './rubrik-wawancara.service';
+export { InterviewSessionService } from './interview-session.service';
+export { InterviewProcessService } from './interview-process.service';

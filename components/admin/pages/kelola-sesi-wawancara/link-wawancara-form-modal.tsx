@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { Link2, Save, Check, KeyRound, RefreshCw, Loader2, Plus, X, Users, UserPlus } from 'lucide-react';
+import { Link2, Save, Check, KeyRound, RefreshCw, Loader2, Plus, X, Users, UserPlus, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { InterviewSessionFormInput, InterviewSessionStatus, ApiInterviewSessionDetail } from '@/types/interview-session';
-import type { ApplicantForSelection } from '@/hooks/use-applicants-for-interview';
+import type { InterviewSessionFormInput, InterviewSessionStatus, ApiInterviewSessionDetail, ExamSessionUser } from '@/types/interview-session';
 import type { RubrikWawancaraWithKriteria } from '@/types/rubrik-wawancara';
 import { cn } from '@/lib/utils';
-import { addInterviewParticipants, removeInterviewParticipants } from '@/lib/api/services/interview-session';
+import { InterviewSessionService } from '@/services';
 
 // ============================================
 // Link Wawancara Form Modal Component
@@ -23,12 +22,12 @@ interface LinkWawancaraFormModalProps {
   session?: ApiInterviewSessionDetail | null;
   mode: 'create' | 'edit';
   rubrikList: RubrikWawancaraWithKriteria[];
-  applicantList: ApplicantForSelection[];
-  selectedApplicationIds?: string[]; // Pre-selected application IDs for edit mode
+  userList: ExamSessionUser[];
+  selectedUserIds?: string[]; // Pre-selected user IDs for edit mode
   isLoading?: boolean;
-  isLoadingSession?: boolean; // Loading state for session detail in edit mode
+  isLoadingSession?: boolean;
   isSaving?: boolean;
-  onRefreshParticipants?: () => Promise<void>; // Callback to refresh participants after add/remove
+  onRefreshParticipants?: () => Promise<void>;
 }
 
 // Generate random alphanumeric PIN (6 characters)
@@ -50,7 +49,7 @@ interface FormContentProps {
   onSubmit: (data: InterviewSessionFormInput) => void;
   onClose: () => void;
   rubrikList: RubrikWawancaraWithKriteria[];
-  applicantList: ApplicantForSelection[];
+  userList: ExamSessionUser[];
   isLoading?: boolean;
   isSaving?: boolean;
   mode: 'create' | 'edit';
@@ -58,7 +57,7 @@ interface FormContentProps {
   onRefreshParticipants?: () => Promise<void>;
 }
 
-function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantList, isLoading, isSaving, mode, sessionId, onRefreshParticipants }: FormContentProps) {
+function FormContent({ initialValues, onSubmit, onClose, rubrikList, userList, isLoading, isSaving, mode, sessionId, onRefreshParticipants }: FormContentProps) {
   const [form, setForm] = useState<InterviewSessionFormInput>(initialValues);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [searchAvailable, setSearchAvailable] = useState('');
@@ -83,47 +82,47 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
 
   // Assigned participants (already in the session)
   const assignedParticipants = useMemo(() => {
-    return applicantList.filter((p) => form.applicationIds.includes(p.applicationId));
-  }, [applicantList, form.applicationIds]);
+    return userList.filter((u) => form.participantUserIds.includes(u.userId));
+  }, [userList, form.participantUserIds]);
 
   // Available participants (not yet in the session)
   const availableParticipants = useMemo(() => {
-    return applicantList.filter((p) => !form.applicationIds.includes(p.applicationId));
-  }, [applicantList, form.applicationIds]);
+    return userList.filter((u) => !form.participantUserIds.includes(u.userId));
+  }, [userList, form.participantUserIds]);
 
   // Filtered assigned participants
   const filteredAssigned = useMemo(() => {
     const search = searchAssigned.toLowerCase();
-    return assignedParticipants.filter((p) => p.fullName.toLowerCase().includes(search) || (p.email && p.email.toLowerCase().includes(search)));
+    return assignedParticipants.filter((u) => u.displayName.toLowerCase().includes(search) || (u.email && u.email.toLowerCase().includes(search)));
   }, [assignedParticipants, searchAssigned]);
 
   // Filtered available participants
   const filteredAvailable = useMemo(() => {
     const search = searchAvailable.toLowerCase();
-    return availableParticipants.filter((p) => p.fullName.toLowerCase().includes(search) || (p.email && p.email.toLowerCase().includes(search)));
+    return availableParticipants.filter((u) => u.displayName.toLowerCase().includes(search) || (u.email && u.email.toLowerCase().includes(search)));
   }, [availableParticipants, searchAvailable]);
 
   // Toggle selection for adding
-  const toggleSelectToAdd = (applicationId: string) => {
+  const toggleSelectToAdd = (userId: string) => {
     setSelectedToAdd((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(applicationId)) {
-        newSet.delete(applicationId);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
       } else {
-        newSet.add(applicationId);
+        newSet.add(userId);
       }
       return newSet;
     });
   };
 
   // Toggle selection for removing
-  const toggleSelectToRemove = (applicationId: string) => {
+  const toggleSelectToRemove = (userId: string) => {
     setSelectedToRemove((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(applicationId)) {
-        newSet.delete(applicationId);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
       } else {
-        newSet.add(applicationId);
+        newSet.add(userId);
       }
       return newSet;
     });
@@ -131,7 +130,7 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
 
   // Select all available for adding
   const selectAllAvailable = () => {
-    const ids = filteredAvailable.map((p) => p.applicationId);
+    const ids = filteredAvailable.map((u) => u.userId);
     setSelectedToAdd(new Set(ids));
   };
 
@@ -142,7 +141,7 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
 
   // Select all assigned for removing
   const selectAllAssigned = () => {
-    const ids = filteredAssigned.map((p) => p.applicationId);
+    const ids = filteredAssigned.map((u) => u.userId);
     setSelectedToRemove(new Set(ids));
   };
 
@@ -157,17 +156,14 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
     setParticipantError(null);
 
     if (mode === 'edit' && sessionId) {
-      // Edit mode: call API to add participants
       setIsAddingParticipants(true);
       try {
-        await addInterviewParticipants(sessionId, Array.from(selectedToAdd));
-        // Update local state
+        await InterviewSessionService.addParticipants(sessionId, Array.from(selectedToAdd));
         setForm((prev) => ({
           ...prev,
-          applicationIds: [...prev.applicationIds, ...Array.from(selectedToAdd)],
+          participantUserIds: [...prev.participantUserIds, ...Array.from(selectedToAdd)],
         }));
         setSelectedToAdd(new Set());
-        // Refresh participants from parent
         if (onRefreshParticipants) {
           await onRefreshParticipants();
         }
@@ -177,16 +173,15 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
         setIsAddingParticipants(false);
       }
     } else {
-      // Create mode: just update local state
       setForm((prev) => ({
         ...prev,
-        applicationIds: [...prev.applicationIds, ...Array.from(selectedToAdd)],
+        participantUserIds: [...prev.participantUserIds, ...Array.from(selectedToAdd)],
       }));
       setSelectedToAdd(new Set());
     }
 
-    if (errors.applicationIds) {
-      setErrors((prev) => ({ ...prev, applicationIds: '' }));
+    if (errors.participantUserIds) {
+      setErrors((prev) => ({ ...prev, participantUserIds: '' }));
     }
   };
 
@@ -196,17 +191,14 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
     setParticipantError(null);
 
     if (mode === 'edit' && sessionId) {
-      // Edit mode: call API to remove participants
       setIsRemovingParticipants(true);
       try {
-        await removeInterviewParticipants(sessionId, Array.from(selectedToRemove));
-        // Update local state
+        await InterviewSessionService.removeParticipants(sessionId, Array.from(selectedToRemove));
         setForm((prev) => ({
           ...prev,
-          applicationIds: prev.applicationIds.filter((id) => !selectedToRemove.has(id)),
+          participantUserIds: prev.participantUserIds.filter((id) => !selectedToRemove.has(id)),
         }));
         setSelectedToRemove(new Set());
-        // Refresh participants from parent
         if (onRefreshParticipants) {
           await onRefreshParticipants();
         }
@@ -216,10 +208,9 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
         setIsRemovingParticipants(false);
       }
     } else {
-      // Create mode: just update local state
       setForm((prev) => ({
         ...prev,
-        applicationIds: prev.applicationIds.filter((id) => !selectedToRemove.has(id)),
+        participantUserIds: prev.participantUserIds.filter((id) => !selectedToRemove.has(id)),
       }));
       setSelectedToRemove(new Set());
     }
@@ -237,8 +228,8 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
     if (!form.rubrikId) {
       newErrors.rubrikId = 'Pilih rubrik wawancara';
     }
-    if (form.applicationIds.length === 0) {
-      newErrors.applicationIds = 'Pilih minimal satu peserta';
+    if (form.participantUserIds.length === 0) {
+      newErrors.participantUserIds = 'Pilih minimal satu peserta';
     }
 
     setErrors(newErrors);
@@ -354,6 +345,16 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
           </div>
         </div>
 
+        {/* Jadwal Wawancara */}
+        <div className="space-y-2">
+          <Label htmlFor="scheduledStartAt">
+            <Calendar className="w-4 h-4 inline mr-1" />
+            Jadwal Wawancara (Opsional)
+          </Label>
+          <Input id="scheduledStartAt" type="datetime-local" value={form.scheduledStartAt} onChange={(e) => handleChange('scheduledStartAt', e.target.value)} />
+          <p className="text-xs text-gray-500">Tanggal dan waktu dimulainya sesi wawancara</p>
+        </div>
+
         {/* Error for participant operations */}
         {participantError && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -366,9 +367,9 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-teal-600" />
             <Label className="text-base font-semibold">Assign Peserta *</Label>
-            <span className="text-sm text-gray-500">({form.applicationIds.length} peserta)</span>
+            <span className="text-sm text-gray-500">({form.participantUserIds.length} peserta)</span>
           </div>
-          {errors.applicationIds && <p className="text-xs text-red-500">{errors.applicationIds}</p>}
+          {errors.participantUserIds && <p className="text-xs text-red-500">{errors.participantUserIds}</p>}
 
           <div className="grid grid-cols-2 gap-4">
             {/* Left: Available Participants */}
@@ -400,18 +401,14 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
                   <div className="p-4 text-center text-xs text-gray-500">{availableParticipants.length === 0 ? 'Semua peserta sudah ditambahkan' : 'Tidak ditemukan'}</div>
                 ) : (
                   <div className="divide-y divide-gray-100">
-                    {filteredAvailable.map((pelamar) => {
-                      const isSelected = selectedToAdd.has(pelamar.applicationId);
+                    {filteredAvailable.map((user) => {
+                      const isSelected = selectedToAdd.has(user.userId);
                       return (
-                        <div
-                          key={pelamar.applicationId}
-                          onClick={() => toggleSelectToAdd(pelamar.applicationId)}
-                          className={cn('flex items-center gap-2 p-2 cursor-pointer transition-colors text-sm', isSelected ? 'bg-teal-50' : 'hover:bg-gray-50')}
-                        >
+                        <div key={user.userId} onClick={() => toggleSelectToAdd(user.userId)} className={cn('flex items-center gap-2 p-2 cursor-pointer transition-colors text-sm', isSelected ? 'bg-teal-50' : 'hover:bg-gray-50')}>
                           <div className={cn('w-4 h-4 rounded border flex items-center justify-center shrink-0', isSelected ? 'bg-teal-600 border-teal-600' : 'border-gray-300')}>{isSelected && <Check className="w-3 h-3 text-white" />}</div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{pelamar.fullName}</p>
-                            {pelamar.email && <p className="text-xs text-gray-500 truncate">{pelamar.email}</p>}
+                            <p className="text-sm font-medium text-gray-900 truncate">{user.displayName}</p>
+                            {user.email && <p className="text-xs text-gray-500 truncate">{user.email}</p>}
                           </div>
                         </div>
                       );
@@ -462,18 +459,14 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
                   <div className="p-4 text-center text-xs text-gray-500">Tidak ditemukan</div>
                 ) : (
                   <div className="divide-y divide-gray-100">
-                    {filteredAssigned.map((pelamar) => {
-                      const isSelected = selectedToRemove.has(pelamar.applicationId);
+                    {filteredAssigned.map((user) => {
+                      const isSelected = selectedToRemove.has(user.userId);
                       return (
-                        <div
-                          key={pelamar.applicationId}
-                          onClick={() => toggleSelectToRemove(pelamar.applicationId)}
-                          className={cn('flex items-center gap-2 p-2 cursor-pointer transition-colors text-sm', isSelected ? 'bg-red-50' : 'hover:bg-gray-50')}
-                        >
+                        <div key={user.userId} onClick={() => toggleSelectToRemove(user.userId)} className={cn('flex items-center gap-2 p-2 cursor-pointer transition-colors text-sm', isSelected ? 'bg-red-50' : 'hover:bg-gray-50')}>
                           <div className={cn('w-4 h-4 rounded border flex items-center justify-center shrink-0', isSelected ? 'bg-red-500 border-red-500' : 'border-gray-300')}>{isSelected && <Check className="w-3 h-3 text-white" />}</div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{pelamar.fullName}</p>
-                            {pelamar.email && <p className="text-xs text-gray-500 truncate">{pelamar.email}</p>}
+                            <p className="text-sm font-medium text-gray-900 truncate">{user.displayName}</p>
+                            {user.email && <p className="text-xs text-gray-500 truncate">{user.email}</p>}
                           </div>
                         </div>
                       );
@@ -527,7 +520,7 @@ function FormContent({ initialValues, onSubmit, onClose, rubrikList, applicantLi
 // Main Modal Component
 // ============================================
 
-export function LinkWawancaraFormModal({ isOpen, onClose, onSave, session, mode, rubrikList, applicantList, selectedApplicationIds, isLoading, isLoadingSession, isSaving, onRefreshParticipants }: LinkWawancaraFormModalProps) {
+export function LinkWawancaraFormModal({ isOpen, onClose, onSave, session, mode, rubrikList, userList, selectedUserIds, isLoading, isLoadingSession, isSaving, onRefreshParticipants }: LinkWawancaraFormModalProps) {
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
@@ -544,20 +537,22 @@ export function LinkWawancaraFormModal({ isOpen, onClose, onSave, session, mode,
         namaInterviewer: session.interviewerName || '',
         emailInterviewer: session.interviewerEmail || '',
         rubrikId: session.rubricId || '',
-        applicationIds: selectedApplicationIds || [],
+        participantUserIds: selectedUserIds || [],
         status: session.isActive ? 'aktif' : 'nonaktif',
         accessPin: session.accessPin || generatePin(),
+        scheduledStartAt: session.scheduledStartAt ? new Date(session.scheduledStartAt).toISOString().slice(0, 16) : '',
       };
     }
     return {
       namaInterviewer: '',
       emailInterviewer: '',
       rubrikId: '',
-      applicationIds: [],
+      participantUserIds: [],
       status: 'aktif',
       accessPin: generatePin(),
+      scheduledStartAt: '',
     };
-  }, [mode, session, selectedApplicationIds]);
+  }, [mode, session, selectedUserIds]);
 
   // Create a unique key for FormContent to force remount when data changes
   // For edit mode, include session.id to remount when session data loads
@@ -570,10 +565,18 @@ export function LinkWawancaraFormModal({ isOpen, onClose, onSave, session, mode,
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         {showLoading ? (
-          <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-teal-600 mb-4" />
-            <p className="text-sm text-gray-500">Memuat data sesi wawancara...</p>
-          </div>
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Link2 className="w-5 h-5 text-teal-600" />
+                Edit Link Wawancara
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-teal-600 mb-4" />
+              <p className="text-sm text-gray-500">Memuat data sesi wawancara...</p>
+            </div>
+          </>
         ) : (
           <FormContent
             key={formKey}
@@ -581,7 +584,7 @@ export function LinkWawancaraFormModal({ isOpen, onClose, onSave, session, mode,
             onSubmit={onSave}
             onClose={onClose}
             rubrikList={rubrikList}
-            applicantList={applicantList}
+            userList={userList}
             isLoading={isLoading}
             isSaving={isSaving}
             mode={mode}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Search, Edit, Trash2, Calendar, Clock, Eye, EyeOff, Copy, Check, Shuffle, FileText } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Calendar, Clock, Eye, EyeOff, Copy, Check, Shuffle, FileText, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -144,12 +144,13 @@ export function SesiUjianList({ sessions = [], onCreateSession, onEditSession, o
                 <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">Randomisasi</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">Status</th>
                 <th className="text-center px-6 py-4 text-sm font-semibold text-gray-700">Aksi</th>
+                <th className="text-center px-6 py-4 text-sm font-semibold text-gray-700">Wawancara</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     {search || statusFilter !== 'all' ? 'Tidak ada sesi ujian yang sesuai filter' : 'Belum ada sesi ujian. Klik "Tambah Sesi Ujian" untuk membuat.'}
                   </td>
                 </tr>
@@ -250,6 +251,17 @@ export function SesiUjianList({ sessions = [], onCreateSession, onEditSession, o
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => router.push(`/admin/kelola-sesi-ujian/${session.id}/kelola-sesi-wawancara`)}
+                          className="h-8 w-20 p-0 text-teal-600 hover:text-white hover:bg-teal-600"
+                          title="Kelola Wawancara"
+                        >
+                          <Mic className="w-4 h-4" /> Kelola
+                        </Button>
                       </td>
                     </tr>
                   );

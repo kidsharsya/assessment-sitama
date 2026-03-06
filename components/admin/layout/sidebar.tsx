@@ -17,7 +17,7 @@ interface AdminSidebarProps {
 
 const menuItems = [
   { id: 'kelola-sesi-ujian', label: 'Kelola Sesi Ujian', href: '/admin/kelola-sesi-ujian', icon: LayoutDashboard },
-  { id: 'kelola-wawancara', label: 'Kelola Wawancara', href: '/admin/kelola-wawancara', icon: Users },
+  // { id: 'kelola-wawancara', label: 'Kelola Wawancara', href: '/admin/kelola-wawancara', icon: Users },
   { id: 'bank-soal', label: 'Bank Soal', href: '/admin/bank-soal', icon: BookOpen },
   { id: 'rubrik-wawancara', label: 'Rubrik Wawancara', href: '/admin/rubrik-wawancara', icon: Mic },
 ];
