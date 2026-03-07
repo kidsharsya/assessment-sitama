@@ -1,10 +1,7 @@
 'use client';
-
-import { useEffect } from 'react';
 import { UserHeader } from '@/components/user/layout/header';
 import { useAuthContext } from '@/context/AuthContext';
 import { AUTH_URLS } from '@/lib/constants';
-import { debugAuthCookies } from '@/helpers/cookieHelper';
 
 // ============================================
 // User Layout - Protected for user role
@@ -21,13 +18,6 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       : appRole !== 'user'
         ? 'Anda tidak memiliki akses sebagai peserta. Silakan login melalui halaman SITAMA.'
         : null;
-
-  // Debug on mount
-  useEffect(() => {
-    if (!isLoading) {
-      debugAuthCookies();
-    }
-  }, [isLoading]);
 
   // Show loading while checking auth
   if (isLoading) {

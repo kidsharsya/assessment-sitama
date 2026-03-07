@@ -213,47 +213,47 @@ export const clearAuthCookies = () => {
 /**
  * Debug: Log semua auth data ke console
  */
-export const debugAuthCookies = () => {
-  console.group('🔐 SITAMA Assessment Auth Debug');
+// export const debugAuthCookies = () => {
+//   console.group('🔐 SITAMA Assessment Auth Debug');
 
-  // Detected role
-  const role = detectAppRole();
-  console.log('🎯 Detected App Role:', role || '(none)');
+//   // Detected role
+//   const role = detectAppRole();
+//   console.log('🎯 Detected App Role:', role || '(none)');
 
-  // All raw cookie values
-  console.group('📦 Raw Cookies');
-  console.log('Admin Token:', Cookies.get(ADMIN_TOKEN_COOKIE) || '(not found)');
-  console.log('Admin User Data:', Cookies.get(ADMIN_USER_DATA_COOKIE) || '(not found)');
-  console.log('User Token:', Cookies.get(USER_TOKEN_COOKIE) || '(not found)');
-  console.log('User User Data:', Cookies.get(USER_USER_DATA_COOKIE) || '(not found)');
-  console.log('All cookies:', Cookies.get());
-  console.groupEnd();
+//   // All raw cookie values
+//   console.group('📦 Raw Cookies');
+//   console.log('Admin Token:', Cookies.get(ADMIN_TOKEN_COOKIE) || '(not found)');
+//   console.log('Admin User Data:', Cookies.get(ADMIN_USER_DATA_COOKIE) || '(not found)');
+//   console.log('User Token:', Cookies.get(USER_TOKEN_COOKIE) || '(not found)');
+//   console.log('User User Data:', Cookies.get(USER_USER_DATA_COOKIE) || '(not found)');
+//   console.log('All cookies:', Cookies.get());
+//   console.groupEnd();
 
-  // Decrypted values
-  const token = getToken();
-  console.log('🔓 Decrypted Token:', token ? `${token.substring(0, 50)}...` : '(null)');
+//   // Decrypted values
+//   const token = getToken();
+//   console.log('🔓 Decrypted Token:', token ? `${token.substring(0, 50)}...` : '(null)');
 
-  const userData = getUserData();
-  console.log('👤 User Data:', userData);
+//   const userData = getUserData();
+//   console.log('👤 User Data:', userData);
 
-  // Decoded JWT
-  if (token) {
-    const decoded = decodeToken(token);
-    console.log('🎫 Decoded JWT Payload:', decoded);
-    console.log('✅ Token Valid:', isTokenValid(token));
+//   // Decoded JWT
+//   if (token) {
+//     const decoded = decodeToken(token);
+//     console.log('🎫 Decoded JWT Payload:', decoded);
+//     console.log('✅ Token Valid:', isTokenValid(token));
 
-    const claims = decoded?.['https://hasura.io/jwt/claims'];
-    console.log('🔑 Hasura Claims:', claims);
-    console.log('🆔 User ID:', claims?.['x-hasura-user-id'] || 'N/A');
-    console.log('🎭 Default Role:', claims?.['x-hasura-default-role'] || 'N/A');
-    console.log('🎭 Allowed Roles:', claims?.['x-hasura-allowed-roles'] || 'N/A');
+//     const claims = decoded?.['https://hasura.io/jwt/claims'];
+//     console.log('🔑 Hasura Claims:', claims);
+//     console.log('🆔 User ID:', claims?.['x-hasura-user-id'] || 'N/A');
+//     console.log('🎭 Default Role:', claims?.['x-hasura-default-role'] || 'N/A');
+//     console.log('🎭 Allowed Roles:', claims?.['x-hasura-allowed-roles'] || 'N/A');
 
-    if (decoded?.exp) {
-      const expiryDate = new Date(decoded.exp * 1000);
-      console.log('⏰ Token Expires:', expiryDate.toLocaleString());
-    }
-  }
+//     if (decoded?.exp) {
+//       const expiryDate = new Date(decoded.exp * 1000);
+//       console.log('⏰ Token Expires:', expiryDate.toLocaleString());
+//     }
+//   }
 
-  console.log('🔒 Is Authenticated:', isAuthenticated());
-  console.groupEnd();
-};
+//   console.log('🔒 Is Authenticated:', isAuthenticated());
+//   console.groupEnd();
+// };

@@ -1,11 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { AdminSidebar, AdminHeader } from '@/components/admin/layout';
 import { cn } from '@/lib/utils';
 import { useAuthContext } from '@/context/AuthContext';
 import { AUTH_URLS } from '@/lib/constants';
-import { debugAuthCookies } from '@/helpers/cookieHelper';
 
 // ============================================
 // Admin Layout - Protected for admin role
@@ -34,13 +33,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       : appRole !== 'admin'
         ? 'Anda tidak memiliki akses sebagai admin. Silakan login melalui halaman Admin SITAMA.'
         : null;
-
-  // Debug on mount
-  useEffect(() => {
-    if (!isLoading) {
-      debugAuthCookies();
-    }
-  }, [isLoading]);
 
   // Save sidebar state to localStorage
   const handleToggleSidebar = () => {
